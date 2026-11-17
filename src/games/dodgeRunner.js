@@ -8,6 +8,7 @@ export const DODGE_HEIGHT = 430;
 const PLAYER_VISUAL_RADIUS = 18;
 const PLAYER_HIT_RADIUS = 13;
 const PLAYER_SPEED = 320;
+const POINTER_CHASE_SPEED = 780;
 const COMBO_WINDOW_SECONDS = 1.8;
 const MAGNET_PULL_RADIUS = 130;
 const MAGNET_PULL_SPEED = 280;
@@ -176,8 +177,17 @@ export function stepDodgeState(
     playerX -= PLAYER_SPEED * deltaSeconds;
   } else if (moveRight && !moveLeft) {
     playerX += PLAYER_SPEED * deltaSeconds;
+  } else if (
+    typeof input?.pointerDeltaX === 'number' &&
+    Number.isFinite(input.pointerDeltaX) &&
+    input.pointerDeltaX !== 0
+  ) {
+    // 터치 드래그 시 손가락 재진입 순간이동 방지를 위한 상대 이동량 반영
+    playerX += input.pointerDeltaX;
   } else if (typeof input?.pointerX === 'number' && Number.isFinite(input.pointerX)) {
-    playerX = input.pointerX;
+    const maxPointerStep = POINTER_CHASE_SPEED * deltaSeconds;
+    const distanceToTarget = input.pointerX - playerX;
+    playerX += clampNumber(distanceToTarget, -maxPointerStep, maxPointerStep);
   }
   playerX = clampNumber(playerX, MIN_PLAYER_X, MAX_PLAYER_X);
 
@@ -792,8 +802,11 @@ export function mountDodgeRunner(canvas, options = {}) {
   const inputState = {
     moveLeft: false,
     moveRight: false,
-    pointerX: null
+    pointerX: null,
+    pointerDeltaX: 0
   };
+  let activeTouchPointerId = null;
+  let lastTouchClampedX = null;
 
   function emitHud() {
     if (typeof onHudUpdate === 'function') {
@@ -841,15 +854,49 @@ export function mountDodgeRunner(canvas, options = {}) {
   }
 
   function handlePointerDown(event) {
+    if (event.pointerType === 'touch') {
+      activeTouchPointerId = event.pointerId;
+      lastTouchClampedX = clampNumber(resolveCanvasX(event.clientX), 0, DODGE_WIDTH);
+      inputState.pointerX = null;
+      if (typeof canvas.setPointerCapture === 'function') {
+        try {
+          canvas.setPointerCapture(event.pointerId);
+        } catch (captureError) {
+          console.warn('Touch pointer capture skipped:', captureError);
+        }
+      }
+      return;
+    }
     inputState.pointerX = resolveCanvasX(event.clientX);
   }
 
   function handlePointerMove(event) {
-    inputState.pointerX = resolveCanvasX(event.clientX);
+    if (event.pointerType === 'touch') {
+      if (activeTouchPointerId !== event.pointerId || lastTouchClampedX === null) {
+        return;
+      }
+      const nextClampedX = clampNumber(resolveCanvasX(event.clientX), 0, DODGE_WIDTH);
+      inputState.pointerDeltaX += nextClampedX - lastTouchClampedX;
+      lastTouchClampedX = nextClampedX;
+      return;
+    }
+    if (activeTouchPointerId === null) {
+      inputState.pointerX = resolveCanvasX(event.clientX);
+    }
+  }
+
+  function handlePointerUpOrCancel(event) {
+    if (event.pointerType === 'touch' && activeTouchPointerId === event.pointerId) {
+      activeTouchPointerId = null;
+      lastTouchClampedX = null;
+      inputState.pointerDeltaX = 0;
+    }
   }
 
   function handlePointerLeave() {
-    inputState.pointerX = null;
+    if (activeTouchPointerId === null) {
+      inputState.pointerX = null;
+    }
   }
 
   function frame(timestamp) {
@@ -863,6 +910,7 @@ export function mountDodgeRunner(canvas, options = {}) {
     const paused = typeof isPaused === 'function' ? isPaused() : Boolean(isPaused);
     if (!paused && !state.gameOver) {
       state = stepDodgeState(state, inputState, rawDeltaSeconds, Math.random);
+      inputState.pointerDeltaX = 0;
 
       if (typeof onSound === 'function') {
         for (let eventIndex = 0; eventIndex < state.events.length; eventIndex += 1) {
@@ -881,6 +929,8 @@ export function mountDodgeRunner(canvas, options = {}) {
           });
         }
       }
+    } else {
+      inputState.pointerDeltaX = 0;
     }
 
     if (context) {
@@ -896,6 +946,8 @@ export function mountDodgeRunner(canvas, options = {}) {
   hostWindow.addEventListener('keyup', handleKeyUp);
   canvas.addEventListener('pointerdown', handlePointerDown);
   canvas.addEventListener('pointermove', handlePointerMove);
+  canvas.addEventListener('pointerup', handlePointerUpOrCancel);
+  canvas.addEventListener('pointercancel', handlePointerUpOrCancel);
   canvas.addEventListener('pointerleave', handlePointerLeave);
 
   emitHud();
@@ -912,6 +964,8 @@ export function mountDodgeRunner(canvas, options = {}) {
       hostWindow.removeEventListener('keyup', handleKeyUp);
       canvas.removeEventListener('pointerdown', handlePointerDown);
       canvas.removeEventListener('pointermove', handlePointerMove);
+      canvas.removeEventListener('pointerup', handlePointerUpOrCancel);
+      canvas.removeEventListener('pointercancel', handlePointerUpOrCancel);
       canvas.removeEventListener('pointerleave', handlePointerLeave);
     }
   };

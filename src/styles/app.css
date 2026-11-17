@@ -1206,3 +1206,70 @@ dialog::backdrop {
   font-size: 13px;
   font-weight: 800;
 }
+
+.leaderboard-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.leaderboard-share-btn {
+  padding: 0 10px;
+  border-color: #ff9ec2;
+  background: #fff0f6;
+  color: #9f1848;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.leaderboard-share-btn:hover:not(:disabled) {
+  background: #ffe0ec;
+}
+
+.share-dialog {
+  max-width: 360px;
+  padding: 16px;
+}
+
+.share-dialog-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.share-close-btn {
+  min-width: 36px;
+  padding: 0 8px;
+  font-weight: 900;
+}
+
+.share-preview-frame {
+  display: flex;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 16px;
+  background: #f5effe;
+  border: 1.5px solid var(--border-soft);
+}
+
+.share-preview-canvas {
+  display: block;
+  width: 100%;
+  max-width: 260px;
+  height: auto;
+  aspect-ratio: 720 / 900;
+  border-radius: 12px;
+  box-shadow: 0 8px 18px rgba(27, 20, 56, 0.14);
+}
+
+.share-feedback {
+  margin: 0;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: #dff7f4;
+  color: #0e4f47;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+}

@@ -75,7 +75,14 @@ export const translations = {
     installIosStep2: '"홈 화면에 추가 ➕"를 누르면 아이콘이 생겨요!',
     installAndroidStep1: '브라우저 오른쪽 위 [⋮] 메뉴를 눌러줘.',
     installAndroidStep2: '"홈 화면에 추가" 또는 "앱 설치"를 누르면 끝!',
-    installGuideClose: '알겠어!'
+    installGuideClose: '알겠어!',
+    shareBragBtn: '자랑하기',
+    shareCardTitle: '내 순위 자랑 카드',
+    shareNowBtn: '카톡·공유하기',
+    saveImageBtn: '이미지 저장',
+    shareCardCopied: '이미지 복사 완료! 채팅창에 바로 붙여넣기(Ctrl+V) 해봐!',
+    shareCardSaved: '이미지 저장 완료! 카톡으로 보내 자랑해 봐!',
+    shareCardShared: '공유 완료!'
   },
   en: {
     brandShort: 'BomBom',
@@ -151,7 +158,14 @@ export const translations = {
     installIosStep2: 'Tap "Add to Home Screen ➕" to create your icon!',
     installAndroidStep1: 'Tap the [⋮] menu in the top right corner.',
     installAndroidStep2: 'Tap "Add to Home screen" or "Install app"!',
-    installGuideClose: 'Got it!'
+    installGuideClose: 'Got it!',
+    shareBragBtn: 'Share Rank',
+    shareCardTitle: 'Brag Card Preview',
+    shareNowBtn: 'Share Card',
+    saveImageBtn: 'Save Image',
+    shareCardCopied: 'Image copied! Paste it into your chat!',
+    shareCardSaved: 'Image saved! Send it to your friends!',
+    shareCardShared: 'Shared!'
   }
 };
 

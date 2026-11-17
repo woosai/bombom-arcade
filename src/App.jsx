@@ -235,6 +235,8 @@ export function App() {
       {currentScreen === 'leaderboard' && (
         <Leaderboard
           nickname={appState.nickname}
+          equippedSkinId={appState.equippedSkin}
+          activeLang={activeLang}
           highScores={appState.highScores}
           onOpenNicknameDialog={() => setNicknameDialogOpen(true)}
           text={text}

@@ -42,10 +42,29 @@ describe('dodgeRunner core mechanics', () => {
     expect(currentState.playerX).toBe(maximumBound);
 
     const pointerLeftState = stepDodgeState(currentState, { pointerX: -200 }, 0.05, createFixedRandom());
-    expect(pointerLeftState.playerX).toBe(minimumBound);
+    expect(pointerLeftState.playerX).toBeLessThan(currentState.playerX);
+    expect(pointerLeftState.playerX).toBeGreaterThan(minimumBound);
 
-    const pointerRightState = stepDodgeState(currentState, { pointerX: 999 }, 0.05, createFixedRandom());
-    expect(pointerRightState.playerX).toBe(maximumBound);
+    let chasedLeftState = currentState;
+    for (let stepIndex = 0; stepIndex < 20; stepIndex += 1) {
+      chasedLeftState = stepDodgeState(chasedLeftState, { pointerX: -200 }, 0.05, createFixedRandom());
+    }
+    expect(chasedLeftState.playerX).toBe(minimumBound);
+
+    let chasedRightState = chasedLeftState;
+    for (let stepIndex = 0; stepIndex < 20; stepIndex += 1) {
+      chasedRightState = stepDodgeState(chasedRightState, { pointerX: 999 }, 0.05, createFixedRandom());
+    }
+    expect(chasedRightState.playerX).toBe(maximumBound);
+  });
+
+  it('applies touch pointerDeltaX smoothly without teleporting on screen re-entry', () => {
+    const startState = createInitialDodgeState();
+    const moved = stepDodgeState(startState, { pointerDeltaX: 40 }, 0.016, createFixedRandom());
+    expect(moved.playerX).toBe(startState.playerX + 40);
+
+    const clamped = stepDodgeState(startState, { pointerDeltaX: 500 }, 0.016, createFixedRandom());
+    expect(clamped.playerX).toBe(DODGE_WIDTH - startState.playerVisualRadius - 4);
   });
 
   it('clamps rawDeltaSeconds to [0, 0.05] and accumulates +5 survival score per second', () => {
@@ -277,6 +296,8 @@ describe('dodgeRunner core mechanics', () => {
     expect(mockWindow.addEventListener).toHaveBeenCalledWith('keyup', expect.any(Function));
     expect(mockCanvas.addEventListener).toHaveBeenCalledWith('pointerdown', expect.any(Function));
     expect(mockCanvas.addEventListener).toHaveBeenCalledWith('pointermove', expect.any(Function));
+    expect(mockCanvas.addEventListener).toHaveBeenCalledWith('pointerup', expect.any(Function));
+    expect(mockCanvas.addEventListener).toHaveBeenCalledWith('pointercancel', expect.any(Function));
     expect(mockCanvas.addEventListener).toHaveBeenCalledWith('pointerleave', expect.any(Function));
 
     runner.destroy();
@@ -286,6 +307,8 @@ describe('dodgeRunner core mechanics', () => {
     expect(mockWindow.removeEventListener).toHaveBeenCalledWith('keyup', expect.any(Function));
     expect(mockCanvas.removeEventListener).toHaveBeenCalledWith('pointerdown', expect.any(Function));
     expect(mockCanvas.removeEventListener).toHaveBeenCalledWith('pointermove', expect.any(Function));
+    expect(mockCanvas.removeEventListener).toHaveBeenCalledWith('pointerup', expect.any(Function));
+    expect(mockCanvas.removeEventListener).toHaveBeenCalledWith('pointercancel', expect.any(Function));
     expect(mockCanvas.removeEventListener).toHaveBeenCalledWith('pointerleave', expect.any(Function));
 
     vi.unstubAllGlobals();
@@ -361,6 +384,88 @@ describe('dodgeRunner core mechanics', () => {
       magnetActive: false,
       feverActive: false
     });
+
+    runner.destroy();
+    vi.unstubAllGlobals();
+  });
+
+  it('tracks touch drag relative delta across out-of-bounds exit and re-entry without teleporting', () => {
+    const mockContext = {
+      save: vi.fn(),
+      restore: vi.fn(),
+      translate: vi.fn(),
+      rotate: vi.fn(),
+      beginPath: vi.fn(),
+      closePath: vi.fn(),
+      moveTo: vi.fn(),
+      lineTo: vi.fn(),
+      arc: vi.fn(),
+      ellipse: vi.fn(),
+      rect: vi.fn(),
+      roundRect: vi.fn(),
+      fill: vi.fn(),
+      stroke: vi.fn(),
+      fillRect: vi.fn(),
+      fillText: vi.fn(),
+      setLineDash: vi.fn(),
+      createLinearGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+      createRadialGradient: vi.fn(() => ({ addColorStop: vi.fn() }))
+    };
+    const canvasListeners = {};
+    const mockCanvas = {
+      width: DODGE_WIDTH,
+      height: DODGE_HEIGHT,
+      getContext: vi.fn(() => mockContext),
+      getBoundingClientRect: vi.fn(() => ({ left: 0, top: 0, width: DODGE_WIDTH, height: DODGE_HEIGHT })),
+      setPointerCapture: vi.fn(),
+      addEventListener: vi.fn((eventName, handler) => {
+        canvasListeners[eventName] = handler;
+      }),
+      removeEventListener: vi.fn()
+    };
+
+    let scheduledCallback = null;
+    const mockWindow = {
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      requestAnimationFrame: vi.fn((callback) => {
+        scheduledCallback = callback;
+        return 11;
+      }),
+      cancelAnimationFrame: vi.fn()
+    };
+    vi.stubGlobal('window', mockWindow);
+
+    const runner = mountDodgeRunner(mockCanvas, {
+      skinId: 'bombom',
+      feverText: 'FEVER!',
+      onHudUpdate: vi.fn(),
+      onGameOver: vi.fn(),
+      onSound: vi.fn(),
+      isPaused: () => false
+    });
+
+    // 터치 시작(x=80) -> 바깥(-60)으로 나갔다가 경계(30)로 재진입 시 순간이동 없이 경계 기준 이동(-30)만 반영 검증
+    canvasListeners.pointerdown({ pointerType: 'touch', pointerId: 1, clientX: 80 });
+    expect(mockCanvas.setPointerCapture).toHaveBeenCalledWith(1);
+
+    canvasListeners.pointermove({ pointerType: 'touch', pointerId: 1, clientX: -60 });
+    scheduledCallback(16);
+    const xAfterExit = mockContext.translate.mock.calls.at(-1)[0];
+    expect(xAfterExit).toBe(DODGE_WIDTH / 2 - 80);
+
+    // 여전히 화면 바깥(-120 -> -40) 이동은 캐릭터에 누적되지 않음을 검증
+    canvasListeners.pointermove({ pointerType: 'touch', pointerId: 1, clientX: -120 });
+    canvasListeners.pointermove({ pointerType: 'touch', pointerId: 1, clientX: -40 });
+    scheduledCallback(32);
+    const xWhileOutside = mockContext.translate.mock.calls.at(-1)[0];
+    expect(xWhileOutside).toBe(xAfterExit);
+
+    // 화면 안(x=30) 재진입 시 경계(0)에서 +30만큼만 부드럽게 이동 (30으로 순간이동 아님)
+    canvasListeners.pointermove({ pointerType: 'touch', pointerId: 1, clientX: 30 });
+    scheduledCallback(48);
+    const xAfterReentry = mockContext.translate.mock.calls.at(-1)[0];
+    expect(xAfterReentry).toBe(xAfterExit + 30);
 
     runner.destroy();
     vi.unstubAllGlobals();

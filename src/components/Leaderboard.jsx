@@ -3,6 +3,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { getSkinById } from '../games/skins.js';
 import { fetchLeaderboard } from '../utils/leaderboard.js';
+import { buildShareCardSummary } from '../utils/shareCard.js';
+import { ShareCardDialog } from './ShareCardDialog.jsx';
 
 function getRankMedal(rankIndex) {
   if (rankIndex === 0) return '🥇';
@@ -13,6 +15,8 @@ function getRankMedal(rankIndex) {
 
 export function Leaderboard({
   nickname,
+  equippedSkinId,
+  activeLang,
   highScores,
   onOpenNicknameDialog,
   text
@@ -23,6 +27,7 @@ export function Leaderboard({
   const [entries, setEntries] = useState([]);
   const [currentUserId, setCurrentUserId] = useState(null);
   const [myEntry, setMyEntry] = useState(null);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
 
   const loadRankings = useCallback(async (gameType) => {
     setLoading(true);
@@ -46,6 +51,17 @@ export function Leaderboard({
 
   const myInTopList = entries.some((entry) => entry.userId === currentUserId);
   const localBest = highScores[selectedGame] || 0;
+  const shareSummary = shareDialogOpen
+    ? buildShareCardSummary({
+        gameType: selectedGame,
+        nickname,
+        equippedSkinId,
+        entries,
+        currentUserId,
+        myEntry,
+        localBest
+      })
+    : null;
 
   return (
     <main className="leaderboard-main">
@@ -54,14 +70,24 @@ export function Leaderboard({
           <h1 className="shop-title">{text.leaderboardTitle}</h1>
           <p className="shop-subtitle">{text.leaderboardSub}</p>
         </div>
-        <button
-          type="button"
-          className="header-btn leaderboard-refresh-btn"
-          onClick={() => loadRankings(selectedGame)}
-          disabled={loading}
-        >
-          {text.leaderboardRefresh}
-        </button>
+        <div className="leaderboard-head-actions">
+          <button
+            type="button"
+            className="header-btn leaderboard-share-btn"
+            onClick={() => setShareDialogOpen(true)}
+            disabled={loading}
+          >
+            <span aria-hidden="true">📢</span> {text.shareBragBtn}
+          </button>
+          <button
+            type="button"
+            className="header-btn leaderboard-refresh-btn"
+            onClick={() => loadRankings(selectedGame)}
+            disabled={loading}
+          >
+            {text.leaderboardRefresh}
+          </button>
+        </div>
       </div>
 
       {!nickname && (
@@ -147,6 +173,14 @@ export function Leaderboard({
           </div>
         )}
       </div>
+
+      <ShareCardDialog
+        open={shareDialogOpen}
+        summary={shareSummary}
+        activeLang={activeLang}
+        onClose={() => setShareDialogOpen(false)}
+        text={text}
+      />
     </main>
   );
 }
