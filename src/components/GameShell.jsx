@@ -28,10 +28,12 @@ export function GameShell({
   gameType,
   equippedSkinId,
   highScore,
+  nickname,
   muted,
   text,
   onGameOverPersist,
-  onBackToLobby
+  onBackToLobby,
+  onOpenNicknameDialog
 }) {
   const [started, setStarted] = useState(false);
   const [paused, setPaused] = useState(false);
@@ -406,6 +408,26 @@ export function GameShell({
             </div>
 
             <p className="result-encouragement">{encouragementMessage}</p>
+
+            <div className="result-ranking-note">
+              {nickname ? (
+                <p className="ranking-synced-text">
+                  <span aria-hidden="true">🏆</span> {nickname} · {text.leaderboardSynced}
+                </p>
+              ) : (
+                <div className="ranking-prompt-box">
+                  <p className="ranking-prompt-text">{text.leaderboardRegisterPrompt}</p>
+                  <button
+                    type="button"
+                    className="nickname-pill-btn"
+                    onClick={onOpenNicknameDialog}
+                  >
+                    <span aria-hidden="true">🏷️</span>
+                    <span>{text.nicknameSetBtn}</span>
+                  </button>
+                </div>
+              )}
+            </div>
 
             <div className="result-actions">
               <button

@@ -10,6 +10,7 @@ const VALID_SKIN_IDENTIFIERS = new Set(SKINS.map((skinItem) => skinItem.id));
 export function createDefaultState() {
   return {
     stars: 0,
+    nickname: '',
     highScores: {
       dodge: 0,
       stack: 0
@@ -33,6 +34,10 @@ export function normalizeState(rawState) {
   const validStars = Number.isFinite(rawState.stars) && rawState.stars >= 0
     ? Math.floor(rawState.stars)
     : 0;
+
+  const validNickname = typeof rawState.nickname === 'string'
+    ? rawState.nickname.trim().slice(0, 10)
+    : '';
 
   const validDodgeScore = Number.isFinite(rawState.highScores?.dodge) && rawState.highScores.dodge >= 0
     ? Math.floor(rawState.highScores.dodge)
@@ -68,6 +73,7 @@ export function normalizeState(rawState) {
 
   return {
     stars: validStars,
+    nickname: validNickname,
     highScores: {
       dodge: validDodgeScore,
       stack: validStackScore

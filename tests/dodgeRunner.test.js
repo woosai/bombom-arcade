@@ -192,26 +192,26 @@ describe('dodgeRunner core mechanics', () => {
     expect(nextState.pickupSpawnTimer).toBeCloseTo(0.24, 5);
   });
 
-  it('spawns warning after 12s elapsed, waits 0.6s, then emits fast meteor with velocityY = 450', () => {
+  it('spawns warning after 18s elapsed, waits 0.9s, then emits fast meteor with velocityY = 450', () => {
     let currentState = createInitialDodgeState();
-    currentState.elapsedSeconds = 12.0;
+    currentState.elapsedSeconds = 18.0;
     currentState.warningSpawnTimer = 0.01;
     currentState.pickupSpawnTimer = 99;
     currentState.hazardSpawnTimer = 99;
 
-    // 12초 경과 시 경고 라인 생성 검증
+    // 18초 경과 시 경고 라인 생성 검증
     currentState = stepDodgeState(currentState, {}, 0.02, createFixedRandom(0.5));
     expect(currentState.warnings).toHaveLength(1);
-    expect(currentState.warnings[0].timer).toBeCloseTo(0.6, 5);
+    expect(currentState.warnings[0].timer).toBeCloseTo(0.9, 5);
 
-    // 0.6초 대기 중에는 아직 고속 운석 미발사 검증
-    for (let stepIndex = 0; stepIndex < 11; stepIndex += 1) {
+    // 0.9초 대기 중에는 아직 고속 운석 미발사 검증
+    for (let stepIndex = 0; stepIndex < 17; stepIndex += 1) {
       currentState = stepDodgeState(currentState, {}, 0.05, createFixedRandom(0.5));
     }
     expect(currentState.warnings).toHaveLength(1);
     expect(currentState.hazards).toHaveLength(0);
 
-    // 0.6초 경과 완료 시 고속 운석(velocityY = 450) 발사 검증
+    // 0.9초 경과 완료 시 고속 운석(velocityY = 450) 발사 검증
     currentState = stepDodgeState(currentState, {}, 0.05, createFixedRandom(0.5));
     expect(currentState.warnings).toHaveLength(0);
     expect(currentState.hazards).toHaveLength(1);

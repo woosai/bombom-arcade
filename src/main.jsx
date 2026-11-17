@@ -13,3 +13,12 @@ if (rootElement) {
     </StrictMode>
   );
 }
+
+// 크롬 확장 환경이 아닌 일반 웹 접속 시에만 PWA 서비스 워커 등록 목적
+const isExtensionRuntime =
+  typeof chrome !== 'undefined' && Boolean(chrome?.runtime?.id);
+if (!isExtensionRuntime && typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}

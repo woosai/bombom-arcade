@@ -163,7 +163,7 @@ def main():
     icons_dir = os.path.join(project_dir, "public", "icons")
     os.makedirs(icons_dir, exist_ok=True)
 
-    sizes = [16, 48, 128]
+    sizes = [16, 48, 128, 180, 192, 512]
     generated_files = []
 
     print(f"Generating PNG icons in {icons_dir}...")

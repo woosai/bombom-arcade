@@ -17,7 +17,12 @@ zip -r "../$OUTPUT" . \
   -x ".DS_Store" \
   -x "*/.DS_Store" \
   -x "Thumbs.db" \
-  -x "*/Thumbs.db"
+  -x "*/Thumbs.db" \
+  -x "site.webmanifest" \
+  -x "sw.js" \
+  -x "icons/icon-180.png" \
+  -x "icons/icon-192.png" \
+  -x "icons/icon-512.png"
 
 cd "$PROJECT_DIR"
 echo "Packaged: $OUTPUT ($(du -h "$OUTPUT" | cut -f1))"

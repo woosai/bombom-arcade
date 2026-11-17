@@ -1,0 +1,14 @@
+{
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json",
+    "edition": "enterprise",
+    "database": "bombom-db",
+    "location": "asia-northeast3"
+  },
+  "auth": {
+    "providers": {
+      "anonymous": true
+    }
+  }
+}

@@ -607,8 +607,9 @@ body.full-tab .canvas-stage {
   min-width: 140px;
 }
 
-/* 네이티브 게임 오버 모달 다이얼로그 */
-.result-dialog {
+/* 네이티브 모달 다이얼로그 공통 규칙 */
+.result-dialog,
+.arcade-dialog {
   width: calc(100% - 32px);
   max-width: 340px;
   padding: 20px 18px;
@@ -620,7 +621,8 @@ body.full-tab .canvas-stage {
 }
 
 /* 닫힌 상태 보존을 위해 dialog[open]에만 flex 레이아웃 스코프 적용 */
-.result-dialog[open] {
+.result-dialog[open],
+.arcade-dialog[open] {
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -859,4 +861,348 @@ dialog::backdrop {
       transform: scale(1.04);
     }
   }
+}
+
+/* 별명 칩, 모바일 홈화면 설치, 순위표 및 추가 모달 스타일 */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.hero-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.nickname-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 28px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1.5px solid #cbb7f5;
+  background: #f5effe;
+  color: var(--ink-primary);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.nickname-pill-btn:hover {
+  background: #eae0fd;
+}
+
+.install-banner-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 14px;
+  border-radius: 14px;
+  border: 2px dashed #ff8fab;
+  background: #fff0f6;
+  color: #9f1848;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.install-banner-btn:hover {
+  background: #ffe3ee;
+}
+
+.lobby-footer-actions {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.lobby-footer-actions .shop-entry-btn {
+  flex: 1.35;
+}
+
+.leaderboard-entry-btn {
+  flex: 0.9;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 8px 10px;
+  border-radius: 16px;
+  border: 2px solid #9be3da;
+  background: #dff7f4;
+  color: #0e4f47;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.leaderboard-entry-btn:hover {
+  background: #c7f1eb;
+}
+
+.result-ranking-note {
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: #f7f2ff;
+  border: 1px solid var(--border-soft);
+  text-align: center;
+}
+
+.ranking-synced-text,
+.ranking-prompt-text {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-secondary);
+}
+
+.ranking-prompt-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.dialog-tip {
+  margin: 0;
+  text-align: center;
+  font-size: 12px;
+  color: var(--ink-secondary);
+}
+
+.nickname-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.nickname-input {
+  width: 100%;
+  min-height: 42px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 2px solid #d4c6f5;
+  background: #ffffff;
+  color: var(--ink-primary);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.nickname-error {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 800;
+  color: #c9184a;
+  text-align: center;
+}
+
+.install-steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.install-step-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1.5px solid var(--border-soft);
+}
+
+.install-step-num {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: var(--accent-pink);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.install-step-text {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-primary);
+}
+
+/* 실시간 순위표 화면 */
+.leaderboard-main {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 14px 14px;
+  flex: 1;
+}
+
+.leaderboard-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.leaderboard-refresh-btn {
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.leaderboard-prompt-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 14px;
+  background: #fff0f6;
+  border: 1.5px solid #ffc2d9;
+}
+
+.leaderboard-prompt-text {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-primary);
+}
+
+.leaderboard-nick-btn {
+  flex-shrink: 0;
+  padding: 0 10px;
+  min-height: 32px;
+  font-size: 12px;
+}
+
+.leaderboard-tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.leaderboard-tab {
+  flex: 1;
+  min-height: 38px;
+  padding: 6px 8px;
+  border-radius: 12px;
+  border: 2px solid var(--border-soft);
+  background: #ffffff;
+  color: var(--ink-secondary);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.leaderboard-tab.is-selected {
+  border-color: var(--accent-pink);
+  background: #fff0f6;
+  color: var(--ink-primary);
+}
+
+.leaderboard-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.leaderboard-status {
+  margin: 24px 0;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-secondary);
+}
+
+.leaderboard-status.is-error {
+  color: #c9184a;
+}
+
+.leaderboard-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.leaderboard-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1.5px solid var(--border-soft);
+}
+
+.leaderboard-row.is-me {
+  border-color: var(--accent-pink);
+  background: #fff4f8;
+}
+
+.leaderboard-rank {
+  width: 24px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.leaderboard-skin {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.leaderboard-name {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--ink-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaderboard-me-badge {
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--accent-pink);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.leaderboard-score {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--ink-primary);
+}
+
+.leaderboard-my-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: #f5effe;
+  border: 1.5px solid #d4c6f5;
+  font-size: 13px;
+  font-weight: 800;
 }

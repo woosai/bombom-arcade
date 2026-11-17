@@ -8,28 +8,29 @@
 
 ### Overview
 
-**BomBom Arcade** ("the Extension") respects your privacy. BomBom Arcade collects, stores off-device, or transmits **zero** personal data, browsing history, usage analytics, or telemetry. Everything stays strictly on your own device.
+**BomBom Arcade** ("the Extension") respects your privacy.
+- **v1.0.x (Offline Mode):** Collects, stores off-device, or transmits **zero** personal data, browsing history, or analytics. Everything stays strictly on your own device.
+- **v1.1+ (Optional Online Leaderboard):** When you voluntarily set a nickname to participate in the online leaderboard, only your chosen nickname (2–10 characters), anonymous user ID, high score per game, and selected mascot skin ID are stored in Google Cloud Firestore solely to display rankings. No real names, emails, phone numbers, or browsing history are collected.
 
 ### Data Saved Locally on Your Device
 
-To make your game progress persist between sessions, BomBom Arcade saves the following non-personal game data strictly locally in your browser's local storage on your device:
+To make your game progress persist between sessions, BomBom Arcade saves the following non-personal game data locally in your browser's storage on your device:
 
+- **Nickname (Optional):** The player nickname (2–10 characters) you choose for the leaderboard.
 - **High Scores:** Your best scores for Star Dodge Runner and Sky Tower Stacker.
 - **Collected Stars:** The star currency you earn by playing mini-games.
 - **Unlocked & Equipped Skins:** Which of the 6 BomBom character skins you have unlocked and currently equipped.
 - **Display & Audio Preferences:** Your selected language (Korean / English / Auto) and sound mute setting.
 
-This local game state never leaves your device, is never synchronized to external servers, and is never read by any third party.
-
 ### Permissions
 
-BomBom Arcade requests only the **`storage`** permission solely to save and restore the local game progress and preferences listed above. It does not request access to websites, tabs, browsing history, cookies, or your identity.
+BomBom Arcade requests only the **`storage`** permission solely to save and restore the local game progress and preferences listed above. It does not request access to websites, tabs, browsing history, cookies, or your personal identity.
 
 ### Third-Party Services & Data Sharing
 
-- BomBom Arcade runs 100% locally and offline inside your browser.
-- It does **not** use external servers, network requests, cookies, advertising SDKs, or analytics/telemetry services.
-- Because no data is collected or transmitted, no user data is ever sold, shared, or disclosed to third parties.
+- BomBom Arcade does **not** use cookies, advertising SDKs, or analytics/telemetry trackers.
+- If you participate in the optional v1.1+ leaderboard, scores and nicknames are stored via Google Firebase (Anonymous Authentication and Cloud Firestore) solely to render the Top 15 leaderboard.
+- No user data is ever sold, rented, or shared with third parties for marketing or advertising.
 
 ### Data Retention & Deletion
 
@@ -51,18 +52,19 @@ If you have any questions about this Privacy Policy, please contact:
 
 ### 개요
 
-**봄봄 아케이드(BomBom Arcade)**는 사용자의 개인정보를 소중하게 생각합니다. 봄봄 아케이드는 개인정보, 웹 방문 기록, 이용 통계(Analytics) 또는 어떠한 원격 측정 데이터도 **수집하거나 외부 서버로 전송·저장하지 않습니다.** 모든 데이터는 오직 사용자의 기기 내부에만 저장됩니다.
+**봄봄 아케이드(BomBom Arcade)**는 사용자의 개인정보를 소중하게 생각합니다.
+- **v1.0.x (오프라인 기본 모드):** 개인정보, 웹 방문 기록, 이용 통계(Analytics) 등 어떠한 데이터도 **수집하거나 외부 서버로 전송·저장하지 않습니다.** 모든 데이터는 기기 내부에만 보관됩니다.
+- **v1.1+ (선택적 온라인 순위표):** 사용자가 직접 별명을 설정해 실시간 순위표에 참여하는 경우에만, 순위 표시 목적으로 설정한 별명(2~10자), 익명 인증 식별자(UID), 게임별 최고 점수, 장착 스킨 ID가 Google Cloud Firestore에 저장됩니다. 실명, 이메일, 전화번호, 웹 방문 기록은 절대 수집하지 않습니다.
 
 ### 기기 내 로컬 저장 데이터
 
-게임을 다시 열었을 때 진행 상황을 이어서 즐길 수 있도록, 봄봄 아케이드는 아래의 비개인 게임 데이터만 사용자의 브라우저 로컬 저장소에 보관합니다.
+게임을 다시 열었을 때 진행 상황을 이어서 즐길 수 있도록, 봄봄 아케이드는 아래의 게임 데이터를 사용자의 브라우저 로컬 저장소에 보관합니다.
 
+- **별명 (선택):** 순위표 표시용으로 사용자가 직접 입력한 별명(2~10자)
 - **최고 기록:** 별빛 닷지 러너 및 하늘 타워 쌓기의 최고 점수
 - **보유 별:** 미니 게임을 플레이하며 획득한 별 개수
 - **스킨 해금 및 장착 상태:** 해금한 봄봄 스킨(6종) 목록과 현재 장착 중인 스킨
 - **환경 설정:** 선택한 언어(한국어 / 영어 / 자동) 및 사운드 음소거 여부
-
-이 데이터는 사용자 기기 밖으로 절대 전송되지 않으며, 외부 서버 동기화나 제3자 열람이 이루어지지 않습니다.
 
 ### 권한 사용 안내
 
@@ -70,9 +72,9 @@ If you have any questions about this Privacy Policy, please contact:
 
 ### 제3자 서비스 및 데이터 공유
 
-- 봄봄 아케이드는 브라우저 내에서 완전히 오프라인으로 동작합니다.
-- 외부 서버 통신, 쿠키, 광고 SDK, 분석/추적 도구를 일절 사용하지 않습니다.
-- 어떠한 사용자 데이터도 수집하지 않으므로 제3자에게 판매, 공유 또는 제공되는 정보가 없습니다.
+- 봄봄 아케이드는 쿠키, 광고 SDK, 분석/추적 도구를 일절 사용하지 않습니다.
+- v1.1+ 실시간 순위표에 참여할 때만 Google Firebase(익명 인증 및 Cloud Firestore)를 통해 별명·점수·스킨 ID를 저장하고 순위표를 표시합니다.
+- 어떠한 사용자 데이터도 제3자에게 판매, 공유 또는 마케팅 목적으로 제공되지 않습니다.
 
 ### 데이터 보관 및 삭제
 

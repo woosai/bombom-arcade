@@ -1,0 +1,120 @@
+rules_version = '2';
+
+// Cloud Firestore Security Rules for bombom-arcade (Database: bombom-db)
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// This security rules file assumes the following data structures:
+//
+// Collection: leaderboards/{gameType}/scores/{userId}
+// Allowed {gameType}: 'dodge' | 'stack'
+// Document ID {userId}: Firebase Auth UID (Anonymous Auth) matching request.auth.uid
+// Fields (all required, no extraneous fields permitted):
+//   - nickname: string (required, length 2..10) - public player display name
+//   - score: int (required, range 0..1000000) - player high score (monotonic non-decreasing on update)
+//   - skinId: string (required, enum) - equipped mascot skin ID
+//   - updatedAt: timestamp (required, must equal request.time / serverTimestamp()) - last score update time
+//
+// ===============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    // Check if the user is authenticated (including Firebase Anonymous Auth)
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Check if authenticated user owns the document by matching UID to document ID
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Validate required fields exist on the incoming document
+    function hasRequiredFields(data, fields) {
+      return data.keys().hasAll(fields);
+    }
+
+    // Validate that the document contains only the allowed fields
+    function hasOnlyAllowedFields(data, fields) {
+      return data.keys().hasOnly(fields);
+    }
+
+    // Validate string type and inclusive character length bounds
+    function validStringLength(value, minLen, maxLen) {
+      return value is string &&
+        value.size() >= minLen &&
+        value.size() <= maxLen;
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    // Restrict leaderboard subcollections to supported arcade game modes
+    function isValidGameType(gameType) {
+      return gameType in ['dodge', 'stack'];
+    }
+
+    // Restrict mascot skin IDs to known skins defined in src/games/skins.js
+    function isValidSkinId(skinId) {
+      return skinId is string &&
+        skinId in [
+          'bombom',
+          'strawberry-slime',
+          'rocket-cat',
+          'ribbon-bunny',
+          'rainbow-cloud',
+          'gold-unicorn'
+        ];
+    }
+
+    // Strict schema, type, range, and server-timestamp validation for leaderboard entries
+    function isValidLeaderboardEntry(data) {
+      let requiredFields = ['nickname', 'score', 'skinId', 'updatedAt'];
+      return hasRequiredFields(data, requiredFields) &&
+        hasOnlyAllowedFields(data, requiredFields) &&
+        validStringLength(data.nickname, 2, 10) &&
+        data.score is int &&
+        data.score >= 0 &&
+        data.score <= 1000000 &&
+        isValidSkinId(data.skinId) &&
+        data.updatedAt is timestamp &&
+        data.updatedAt == request.time;
+    }
+
+    // ===============================================================
+    // Collection Rules
+    // ===============================================================
+
+    // Public Top 15 arcade leaderboards (non-sensitive nickname, score, skinId only)
+    match /leaderboards/{gameType}/scores/{userId} {
+      // Allow public get/list only for valid game modes
+      allow get, list: if isValidGameType(gameType);
+
+      // Allow authenticated owner to create their initial score entry
+      allow create: if isOwner(userId) &&
+        isValidGameType(gameType) &&
+        isValidLeaderboardEntry(request.resource.data);
+
+      // Allow authenticated owner to update profile fields or raise their high score (never downgrade)
+      allow update: if isOwner(userId) &&
+        isValidGameType(gameType) &&
+        isValidLeaderboardEntry(request.resource.data) &&
+        request.resource.data.score >= resource.data.score;
+
+      // Deny deletes to prevent leaderboard tampering or accidental wipe
+      allow delete: if false;
+    }
+
+    // Default deny catch-all for all other collections and subcollections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -6,11 +6,16 @@ import { drawSkinMascot, getSkinById } from '../games/skins.js';
 export function Lobby({
   equippedSkinId,
   activeLang,
+  nickname,
   highScores,
   unlockedCount,
   totalSkins,
   onSelectGame,
   onOpenShop,
+  onOpenLeaderboard,
+  onOpenNicknameDialog,
+  installMode,
+  onInstallClick,
   text
 }) {
   const mascotCanvasRef = useRef(null);
@@ -74,12 +79,33 @@ export function Lobby({
             {text.brandName}
           </h1>
           <p className="lobby-tagline">{text.tagline}</p>
-          <div className="equipped-pill">
-            <span aria-hidden="true">{equippedSkin.badge}</span>
-            <span>{equippedSkin.name[activeLang] || equippedSkin.name.en}</span>
+          <div className="hero-chips">
+            <div className="equipped-pill">
+              <span aria-hidden="true">{equippedSkin.badge}</span>
+              <span>{equippedSkin.name[activeLang] || equippedSkin.name.en}</span>
+            </div>
+            <button
+              type="button"
+              className="nickname-pill-btn"
+              onClick={onOpenNicknameDialog}
+            >
+              <span aria-hidden="true">🏷️</span>
+              <span>{nickname || text.nicknameSetBtn}</span>
+            </button>
           </div>
         </div>
       </section>
+
+      {installMode !== 'none' && (
+        <button
+          type="button"
+          className="install-banner-btn"
+          onClick={onInstallClick}
+        >
+          <span aria-hidden="true">📱</span>
+          <span>{text.installAppBtn}</span>
+        </button>
+      )}
 
       <div className="lobby-games">
         <article className="game-card game-card-dodge">
@@ -129,19 +155,30 @@ export function Lobby({
         </article>
       </div>
 
-      <button
-        type="button"
-        className="shop-entry-btn"
-        onClick={onOpenShop}
-      >
-        <span className="shop-entry-label">
-          <span aria-hidden="true">🎨</span>
-          <span>{text.skinShopTitle}</span>
-        </span>
-        <span className="shop-count-badge">
-          {unlockedCount}/{totalSkins}
-        </span>
-      </button>
+      <div className="lobby-footer-actions">
+        <button
+          type="button"
+          className="shop-entry-btn"
+          onClick={onOpenShop}
+        >
+          <span className="shop-entry-label">
+            <span aria-hidden="true">🎨</span>
+            <span>{text.skinShopTitle}</span>
+          </span>
+          <span className="shop-count-badge">
+            {unlockedCount}/{totalSkins}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          className="leaderboard-entry-btn"
+          onClick={onOpenLeaderboard}
+        >
+          <span aria-hidden="true">🏆</span>
+          <span>{text.leaderboardBtn}</span>
+        </button>
+      </div>
     </main>
   );
 }

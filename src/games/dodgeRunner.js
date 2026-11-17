@@ -15,8 +15,8 @@ const MAGNET_DURATION_SECONDS = 6.0;
 const FEVER_DURATION_SECONDS = 5.0;
 const FEVER_PICKUP_INTERVAL = 0.24;
 const NORMAL_PICKUP_INTERVAL = 0.68;
-const WARNING_START_ELAPSED = 12;
-const WARNING_WAIT_SECONDS = 0.6;
+const WARNING_START_ELAPSED = 18;
+const WARNING_WAIT_SECONDS = 0.9;
 const FAST_METEOR_SPEED = 450;
 const MAX_DELTA_SECONDS = 0.05;
 const MIN_PLAYER_X = PLAYER_VISUAL_RADIUS + 4;
@@ -66,7 +66,7 @@ export function createInitialDodgeState() {
     magnetTimer: 0,
     feverTimer: 0,
     elapsedSeconds: 0,
-    hazardSpawnTimer: 0.55,
+    hazardSpawnTimer: 1.4,
     pickupSpawnTimer: 0.4,
     warningSpawnTimer: 0,
     hazards: [],
@@ -354,7 +354,7 @@ export function stepDodgeState(
   const activeHazards = [...previousState.hazards];
   if (hazardSpawnTimer <= 0) {
     activeHazards.push(createNormalHazard(elapsedSeconds, randomFunction));
-    const baseInterval = Math.max(0.28, 0.85 - difficultyRatio * 0.5);
+    const baseInterval = Math.max(0.32, 1.05 - difficultyRatio * 0.65);
     hazardSpawnTimer = baseInterval * (0.85 + randomFunction() * 0.3);
   }
 

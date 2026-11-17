@@ -20,6 +20,7 @@ describe('storage normalization and defaults', () => {
     const defaultState = createDefaultState();
     expect(defaultState).toEqual({
       stars: 0,
+      nickname: '',
       highScores: {
         dodge: 0,
         stack: 0
@@ -40,6 +41,7 @@ describe('storage normalization and defaults', () => {
 
     const normalized = normalizeState({
       stars: -50,
+      nickname: '  봄봄  ',
       highScores: { dodge: 120, stack: 'invalid' },
       unlockedSkins: ['unknown_skin', 'strawberry-slime'],
       equippedSkin: 'gold-unicorn',
@@ -47,6 +49,7 @@ describe('storage normalization and defaults', () => {
     });
 
     expect(normalized.stars).toBe(0);
+    expect(normalized.nickname).toBe('봄봄');
     expect(normalized.highScores).toEqual({ dodge: 120, stack: 0 });
     expect(normalized.unlockedSkins).toEqual(['bombom', 'strawberry-slime']);
     expect(normalized.equippedSkin).toBe('bombom');
