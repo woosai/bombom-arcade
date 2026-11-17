@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  deduplicateLeaderboardEntries,
   normalizeLeaderboardEntry,
   validateNickname
 } from '../src/utils/leaderboard.js';
@@ -58,5 +59,33 @@ describe('normalizeLeaderboardEntry', () => {
       score: 345,
       skinId: 'bombom'
     });
+  });
+});
+
+describe('deduplicateLeaderboardEntries', () => {
+  it('keeps highest score per normalized nickname and prefers currentUserId on tie', () => {
+    const entries = [
+      { userId: 'old-pwa', nickname: 'BomBom', score: 500, skinId: 'bombom' },
+      { userId: 'new-safari', nickname: 'bombom', score: 500, skinId: 'rocket-cat' },
+      { userId: 'other-user', nickname: '스타', score: 400, skinId: 'bombom' },
+      { userId: 'other-older', nickname: '스타 ', score: 300, skinId: 'bombom' }
+    ];
+
+    const deduplicated = deduplicateLeaderboardEntries(entries, 'new-safari', 15);
+    expect(deduplicated).toEqual([
+      { userId: 'new-safari', nickname: 'bombom', score: 500, skinId: 'rocket-cat' },
+      { userId: 'other-user', nickname: '스타', score: 400, skinId: 'bombom' }
+    ]);
+  });
+
+  it('respects leaderboard limit after deduplication', () => {
+    const entries = Array.from({ length: 20 }, (_unused, index) => ({
+      userId: `user-${index}`,
+      nickname: `Player${index}`,
+      score: 1000 - index,
+      skinId: 'bombom'
+    }));
+
+    expect(deduplicateLeaderboardEntries(entries, null, 15)).toHaveLength(15);
   });
 });

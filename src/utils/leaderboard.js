@@ -9,6 +9,7 @@ const VALID_GAME_TYPES = new Set(['dodge', 'stack']);
 const VALID_SKIN_IDENTIFIERS = new Set(SKINS.map((skinItem) => skinItem.id));
 const MAX_LEADERBOARD_SCORE = 1000000;
 const LEADERBOARD_LIMIT = 15;
+const LEADERBOARD_QUERY_LIMIT = 30;
 const pendingWrites = new Set();
 
 async function waitForPendingWrites() {
@@ -81,6 +82,35 @@ export function normalizeLeaderboardEntry(userId, rawData) {
   };
 }
 
+// 기기 복구 후 동일 별명의 구 익명 UID 기록이 중복 노출되지 않도록 정리 목적
+export function deduplicateLeaderboardEntries(entries, currentUserId, limit = LEADERBOARD_LIMIT) {
+  const bestEntryByNickname = new Map();
+
+  for (let index = 0; index < entries.length; index += 1) {
+    const entry = entries[index];
+    const nicknameKey = String(entry.nickname || '').trim().toLowerCase();
+    const existing = bestEntryByNickname.get(nicknameKey);
+    if (!existing) {
+      bestEntryByNickname.set(nicknameKey, entry);
+      continue;
+    }
+
+    const isHigherScore = entry.score > existing.score;
+    const isTiedPreferCurrentUser =
+      entry.score === existing.score &&
+      Boolean(currentUserId) &&
+      entry.userId === currentUserId;
+
+    if (isHigherScore || isTiedPreferCurrentUser) {
+      bestEntryByNickname.set(nicknameKey, entry);
+    }
+  }
+
+  return Array.from(bestEntryByNickname.values())
+    .sort((entryA, entryB) => entryB.score - entryA.score)
+    .slice(0, limit);
+}
+
 // Enterprise Pipelines 기반 상위 15명 및 본인 순위 조회 목적
 export async function fetchLeaderboard(gameType) {
   if (!VALID_GAME_TYPES.has(gameType)) {
@@ -104,12 +134,13 @@ export async function fetchLeaderboard(gameType) {
       .pipeline()
       .collection(`leaderboards/${gameType}/scores`)
       .sort(field('score').descending())
-      .limit(LEADERBOARD_LIMIT)
+      .limit(LEADERBOARD_QUERY_LIMIT)
   );
 
-  const entries = snapshot.results.map((resultItem) =>
+  const rawEntries = snapshot.results.map((resultItem) =>
     normalizeLeaderboardEntry(resultItem.id || resultItem.ref?.id, resultItem.data())
   );
+  const entries = deduplicateLeaderboardEntries(rawEntries, currentUserId, LEADERBOARD_LIMIT);
 
   let myEntry = entries.find((entry) => entry.userId === currentUserId) || null;
   if (!myEntry && currentUserId) {

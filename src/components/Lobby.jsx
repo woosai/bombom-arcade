@@ -14,6 +14,7 @@ export function Lobby({
   onOpenShop,
   onOpenLeaderboard,
   onOpenNicknameDialog,
+  onOpenRestoreDialog,
   installMode,
   onInstallClick,
   text
@@ -91,6 +92,14 @@ export function Lobby({
             >
               <span aria-hidden="true">🏷️</span>
               <span>{nickname || text.nicknameSetBtn}</span>
+            </button>
+            <button
+              type="button"
+              className="nickname-pill-btn restore-pill-btn"
+              onClick={onOpenRestoreDialog}
+            >
+              <span aria-hidden="true">☁️</span>
+              <span>{text.restoreOpenBtn}</span>
             </button>
           </div>
         </div>

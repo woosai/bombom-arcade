@@ -7,10 +7,12 @@ import { InstallGuideDialog } from './components/InstallGuideDialog.jsx';
 import { Leaderboard } from './components/Leaderboard.jsx';
 import { Lobby } from './components/Lobby.jsx';
 import { NicknameDialog } from './components/NicknameDialog.jsx';
+import { RestoreDialog } from './components/RestoreDialog.jsx';
 import { SkinShop } from './components/SkinShop.jsx';
 import { SKINS, equipSkin, unlockSkin } from './games/skins.js';
 import { resolveLanguage, translations } from './i18n/translations.js';
 import { submitLeaderboardScore } from './utils/leaderboard.js';
+import { registerNicknameWithBackup, syncProfileBackup } from './utils/profileBackup.js';
 import { usePwaInstall } from './utils/pwaInstall.js';
 import {
   applyMiniStarReward,
@@ -38,6 +40,9 @@ export function App() {
 
   const [currentScreen, setCurrentScreen] = useState('lobby');
   const [nicknameDialogOpen, setNicknameDialogOpen] = useState(false);
+  const [restoreDialogOpen, setRestoreDialogOpen] = useState(false);
+  const [restoreSeedNickname, setRestoreSeedNickname] = useState('');
+  const [restoreToastVisible, setRestoreToastVisible] = useState(false);
   const [installGuideOpen, setInstallGuideOpen] = useState(false);
 
   const { installMode, triggerNativeInstall } = usePwaInstall(isExtensionContext);
@@ -68,6 +73,18 @@ export function App() {
     document.body.classList.toggle('full-tab', isFullTab);
   }, [activeLang, isFullTab]);
 
+  useEffect(() => {
+    if (!restoreToastVisible) {
+      return undefined;
+    }
+    const timer = window.setTimeout(() => {
+      setRestoreToastVisible(false);
+    }, 4000);
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [restoreToastVisible]);
+
   // 업데이터 부수효과 방지를 위해 상태 계산 후 외부에서 저장 수행 목적
   function commitStateUpdate(updater) {
     const nextState = updater(appStateRef.current);
@@ -75,6 +92,36 @@ export function App() {
     setAppState(nextState);
     saveState(nextState);
     return nextState;
+  }
+
+  function syncBackupIfActive(targetState) {
+    if (!targetState?.backupKey || !targetState?.nickname) {
+      return;
+    }
+    syncProfileBackup(targetState.backupKey, targetState).catch((backupError) => {
+      console.warn('Cloud profile backup sync skipped:', backupError);
+    });
+  }
+
+  function syncLeaderboardsForState(targetState, includeZeroDodge = false) {
+    if (!targetState?.nickname) {
+      return;
+    }
+    const gameTypes = ['dodge', 'stack'];
+    for (let index = 0; index < gameTypes.length; index += 1) {
+      const gameType = gameTypes[index];
+      const bestScore = targetState.highScores[gameType] || 0;
+      if (bestScore > 0 || (includeZeroDodge && gameType === 'dodge')) {
+        submitLeaderboardScore({
+          gameType,
+          nickname: targetState.nickname,
+          score: bestScore,
+          skinId: targetState.equippedSkin
+        }).catch((syncError) => {
+          console.warn('Leaderboard sync skipped:', syncError);
+        });
+      }
+    }
   }
 
   function handleToggleLanguage() {
@@ -134,52 +181,62 @@ export function App() {
         console.warn('Leaderboard sync skipped:', syncError);
       });
     }
+    syncBackupIfActive(nextState);
 
     return rewardSummary;
   }
 
-  function handleSaveNickname(newNickname) {
+  async function handleSaveNickname({ nickname, pin }) {
+    const registrationResult = await registerNicknameWithBackup({
+      currentState: appStateRef.current,
+      nickname,
+      pin
+    });
+    if (!registrationResult.ok) {
+      return registrationResult;
+    }
+
     setNicknameDialogOpen(false);
     const nextState = commitStateUpdate((previousState) => ({
       ...previousState,
-      nickname: newNickname
+      nickname: registrationResult.nickname,
+      backupKey: registrationResult.backupKey
     }));
 
-    const gameTypes = ['dodge', 'stack'];
-    for (let index = 0; index < gameTypes.length; index += 1) {
-      const gameType = gameTypes[index];
-      const bestScore = nextState.highScores[gameType] || 0;
-      if (bestScore > 0 || gameType === 'dodge') {
-        submitLeaderboardScore({
-          gameType,
-          nickname: newNickname,
-          score: bestScore,
-          skinId: nextState.equippedSkin
-        }).catch((syncError) => {
-          console.warn('Leaderboard nickname sync skipped:', syncError);
-        });
-      }
-    }
+    syncLeaderboardsForState(nextState, true);
+    return { ok: true };
+  }
+
+  function handleRestoreBackup(restoredState) {
+    setRestoreDialogOpen(false);
+    const nextState = commitStateUpdate((previousState) => ({
+      ...restoredState,
+      settings: previousState.settings
+    }));
+    syncLeaderboardsForState(nextState, true);
+    setRestoreToastVisible(true);
+  }
+
+  function handleOpenRestoreDialog(seedNickname = '') {
+    setNicknameDialogOpen(false);
+    setRestoreSeedNickname(seedNickname);
+    setRestoreDialogOpen(true);
   }
 
   function handleUnlockSkin(skinId) {
-    commitStateUpdate((previousState) => unlockSkin(previousState, skinId));
+    const previousStars = appStateRef.current.stars;
+    const nextState = commitStateUpdate((previousState) => unlockSkin(previousState, skinId));
+    if (nextState.stars !== previousStars) {
+      syncBackupIfActive(nextState);
+    }
   }
 
   function handleEquipSkin(skinId) {
+    const previousEquipped = appStateRef.current.equippedSkin;
     const nextState = commitStateUpdate((previousState) => equipSkin(previousState, skinId));
-    if (nextState.nickname) {
-      for (const gameType of ['dodge', 'stack']) {
-        const bestScore = nextState.highScores[gameType] || 0;
-        if (bestScore > 0) {
-          submitLeaderboardScore({
-            gameType,
-            nickname: nextState.nickname,
-            score: bestScore,
-            skinId: nextState.equippedSkin
-          }).catch(() => {});
-        }
-      }
+    if (nextState.equippedSkin !== previousEquipped) {
+      syncLeaderboardsForState(nextState, false);
+      syncBackupIfActive(nextState);
     }
   }
 
@@ -207,6 +264,12 @@ export function App() {
         text={text}
       />
 
+      {restoreToastVisible && (
+        <p className="restore-toast" role="status">
+          {text.restoreSuccessToast}
+        </p>
+      )}
+
       {currentScreen === 'lobby' && (
         <Lobby
           equippedSkinId={appState.equippedSkin}
@@ -219,6 +282,7 @@ export function App() {
           onOpenShop={() => setCurrentScreen('shop')}
           onOpenLeaderboard={() => setCurrentScreen('leaderboard')}
           onOpenNicknameDialog={() => setNicknameDialogOpen(true)}
+          onOpenRestoreDialog={() => handleOpenRestoreDialog(appState.nickname)}
           installMode={installMode}
           onInstallClick={handleInstallClick}
           text={text}
@@ -266,8 +330,19 @@ export function App() {
       <NicknameDialog
         open={nicknameDialogOpen}
         currentNickname={appState.nickname}
+        hasBackup={Boolean(appState.backupKey)}
         onSave={handleSaveNickname}
+        onSwitchToRestore={(seedNickname) => handleOpenRestoreDialog(seedNickname)}
         onClose={() => setNicknameDialogOpen(false)}
+        text={text}
+      />
+
+      <RestoreDialog
+        open={restoreDialogOpen}
+        initialNickname={restoreSeedNickname}
+        currentState={appState}
+        onRestore={handleRestoreBackup}
+        onClose={() => setRestoreDialogOpen(false)}
         text={text}
       />
 

@@ -4,6 +4,7 @@ import { SKINS } from '../games/skins.js';
 
 export const STORAGE_KEY = 'bombom_arcade_v1';
 export const MINI_STARS_PER_GOLD_STAR = 10;
+export const SHA256_HEX_PATTERN = /^[0-9a-f]{64}$/;
 
 const VALID_SKIN_IDENTIFIERS = new Set(SKINS.map((skinItem) => skinItem.id));
 
@@ -13,6 +14,7 @@ export function createDefaultState() {
     stars: 0,
     starFragments: 0,
     nickname: '',
+    backupKey: '',
     highScores: {
       dodge: 0,
       stack: 0
@@ -66,6 +68,10 @@ export function normalizeState(rawState) {
     ? rawState.nickname.trim().slice(0, 10)
     : '';
 
+  const validBackupKey = typeof rawState.backupKey === 'string' && SHA256_HEX_PATTERN.test(rawState.backupKey)
+    ? rawState.backupKey
+    : '';
+
   const validDodgeScore = Number.isFinite(rawState.highScores?.dodge) && rawState.highScores.dodge >= 0
     ? Math.floor(rawState.highScores.dodge)
     : 0;
@@ -102,6 +108,7 @@ export function normalizeState(rawState) {
     stars: validStars,
     starFragments: validStarFragments,
     nickname: validNickname,
+    backupKey: validBackupKey,
     highScores: {
       dodge: validDodgeScore,
       stack: validStackScore
@@ -113,6 +120,22 @@ export function normalizeState(rawState) {
       muted: normalizedMuted
     }
   };
+}
+
+// 복원 시 현재 기기 임시 기록이 덮어써지는지 판별 목적
+export function hasProgressToOverwrite(rawState, targetBackupKey = '') {
+  const state = normalizeState(rawState);
+  if (targetBackupKey && state.backupKey === targetBackupKey) {
+    return false;
+  }
+  return Boolean(
+    state.nickname ||
+    state.stars > 0 ||
+    state.starFragments > 0 ||
+    state.highScores.dodge > 0 ||
+    state.highScores.stack > 0 ||
+    state.unlockedSkins.length > 1
+  );
 }
 
 // 일반 웹·모바일 환경에서 첫 렌더 깜빡임 방지를 위한 동기 로드 목적

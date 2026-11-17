@@ -16,6 +16,25 @@ rules_version = '2';
 //   - skinId: string (required, enum) - equipped mascot skin ID
 //   - updatedAt: timestamp (required, must equal request.time / serverTimestamp()) - last score update time
 //
+// Collection: nicknameClaims/{claimKey}
+// Document ID {claimKey}: SHA-256 hex digest (64 lowercase hex chars) of "bombom-claim-v1:" + normalized nickname
+// Fields (all required, immutable after creation, no extraneous fields permitted):
+//   - ownerUid: string (required, must equal request.auth.uid) - anonymous UID that first claimed the nickname
+//   - updatedAt: timestamp (required, must equal request.time / serverTimestamp()) - claim creation time
+//
+// Collection: profiles/{profileKey}
+// Document ID {profileKey}: SHA-256 hex digest (64 lowercase hex chars) of "bombom-profile-v1:" + normalized nickname + ":" + 4-digit PIN
+// Fields (all required, no extraneous fields permitted):
+//   - nickname: string (required, length 2..10) - player display name
+//   - stars: int (required, range 0..1000000) - golden stars balance
+//   - starFragments: int (required, range 0..9) - mini star fragments toward next golden star
+//   - highScores: map (required, keys exactly ['dodge', 'stack'])
+//       - dodge: int (required, range 0..1000000)
+//       - stack: int (required, range 0..1000000)
+//   - unlockedSkins: list (required, length 1..6, contains 'bombom', all elements valid skin IDs) - unlocked skin IDs
+//   - equippedSkin: string (required, valid skin ID and present in unlockedSkins) - equipped mascot skin ID
+//   - updatedAt: timestamp (required, must equal request.time / serverTimestamp()) - last backup sync time
+//
 // ===============================================================
 
 service cloud.firestore {
@@ -50,6 +69,11 @@ service cloud.firestore {
       return value is string &&
         value.size() >= minLen &&
         value.size() <= maxLen;
+    }
+
+    // Validate lowercase 64-character SHA-256 hex digest format for hashed document IDs
+    function isValidSha256Hex(value) {
+      return value is string && value.matches('^[0-9a-f]{64}$');
     }
 
     // ===============================================================
@@ -88,6 +112,76 @@ service cloud.firestore {
         data.updatedAt == request.time;
     }
 
+    // Strict schema, ownership, and server-timestamp validation for nickname claim entries
+    function isValidNicknameClaim(data) {
+      let requiredFields = ['ownerUid', 'updatedAt'];
+      return hasRequiredFields(data, requiredFields) &&
+        hasOnlyAllowedFields(data, requiredFields) &&
+        data.ownerUid is string &&
+        isOwner(data.ownerUid) &&
+        data.updatedAt is timestamp &&
+        data.updatedAt == request.time;
+    }
+
+    // Validate nested highScores map keys and integer score bounds
+    function isValidHighScoresMap(highScores) {
+      let allowedGames = ['dodge', 'stack'];
+      return highScores is map &&
+        highScores.keys().hasAll(allowedGames) &&
+        highScores.keys().hasOnly(allowedGames) &&
+        highScores.dodge is int &&
+        highScores.dodge >= 0 &&
+        highScores.dodge <= 1000000 &&
+        highScores.stack is int &&
+        highScores.stack >= 0 &&
+        highScores.stack <= 1000000;
+    }
+
+    // Validate unlockedSkins list size, default 'bombom' presence, and allowed skin IDs
+    function isValidUnlockedSkinsList(unlockedSkins) {
+      let allowedSkins = [
+        'bombom',
+        'strawberry-slime',
+        'rocket-cat',
+        'ribbon-bunny',
+        'rainbow-cloud',
+        'gold-unicorn'
+      ];
+      return unlockedSkins is list &&
+        unlockedSkins.size() >= 1 &&
+        unlockedSkins.size() <= 6 &&
+        'bombom' in unlockedSkins &&
+        unlockedSkins.hasOnly(allowedSkins);
+    }
+
+    // Strict schema, type, range, skin consistency, and server-timestamp validation for cloud profile backups
+    function isValidProfileBackup(data) {
+      let requiredFields = [
+        'nickname',
+        'stars',
+        'starFragments',
+        'highScores',
+        'unlockedSkins',
+        'equippedSkin',
+        'updatedAt'
+      ];
+      return hasRequiredFields(data, requiredFields) &&
+        hasOnlyAllowedFields(data, requiredFields) &&
+        validStringLength(data.nickname, 2, 10) &&
+        data.stars is int &&
+        data.stars >= 0 &&
+        data.stars <= 1000000 &&
+        data.starFragments is int &&
+        data.starFragments >= 0 &&
+        data.starFragments <= 9 &&
+        isValidHighScoresMap(data.highScores) &&
+        isValidUnlockedSkinsList(data.unlockedSkins) &&
+        isValidSkinId(data.equippedSkin) &&
+        data.equippedSkin in data.unlockedSkins &&
+        data.updatedAt is timestamp &&
+        data.updatedAt == request.time;
+    }
+
     // ===============================================================
     // Collection Rules
     // ===============================================================
@@ -109,6 +203,26 @@ service cloud.firestore {
         request.resource.data.score >= resource.data.score;
 
       // Deny deletes to prevent leaderboard tampering or accidental wipe
+      allow delete: if false;
+    }
+
+    // Hashed nickname uniqueness claims (prevents duplicate nicknames without exposing plaintext list)
+    match /nicknameClaims/{claimKey} {
+      allow get: if isAuthenticated() && isValidSha256Hex(claimKey);
+      allow list: if false;
+      allow create: if isAuthenticated() &&
+        isValidSha256Hex(claimKey) &&
+        isValidNicknameClaim(request.resource.data);
+      allow update, delete: if false;
+    }
+
+    // PIN-hashed cloud backup profiles (accessible only by exact knowledge of SHA-256 profileKey)
+    match /profiles/{profileKey} {
+      allow get: if isAuthenticated() && isValidSha256Hex(profileKey);
+      allow list: if false;
+      allow create, update: if isAuthenticated() &&
+        isValidSha256Hex(profileKey) &&
+        isValidProfileBackup(request.resource.data);
       allow delete: if false;
     }
 

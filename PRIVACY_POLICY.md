@@ -10,7 +10,7 @@
 
 **BomBom Arcade** ("the Extension") respects your privacy.
 - **v1.0.x (Offline Mode):** Collects, stores off-device, or transmits **zero** personal data, browsing history, or analytics. Everything stays strictly on your own device.
-- **v1.1+ (Optional Online Leaderboard):** When you voluntarily set a nickname to participate in the online leaderboard, only your chosen nickname (2–10 characters), anonymous user ID, high score per game, and selected mascot skin ID are stored in Google Cloud Firestore solely to display rankings. No real names, emails, phone numbers, or browsing history are collected.
+- **v1.1+ (Optional Online Leaderboard & Cloud Restore):** When you voluntarily set a nickname and 4-digit recovery PIN to participate in the online leaderboard or cloud backup, only your chosen nickname (2–10 characters), anonymous user ID, high scores, collected stars, unlocked/equipped skin IDs, and one-way SHA-256 hash keys (raw PINs are never stored) are stored in Google Cloud Firestore solely to display rankings and restore your progress across browsers or devices. No real names, emails, phone numbers, or browsing history are collected.
 
 ### Data Saved Locally on Your Device
 
@@ -29,7 +29,7 @@ BomBom Arcade requests only the **`storage`** permission solely to save and rest
 ### Third-Party Services & Data Sharing
 
 - BomBom Arcade does **not** use cookies, advertising SDKs, or analytics/telemetry trackers.
-- If you participate in the optional v1.1+ leaderboard, scores and nicknames are stored via Google Firebase (Anonymous Authentication and Cloud Firestore) solely to render the Top 15 leaderboard.
+- If you participate in the optional v1.1+ leaderboard or cloud restore, game progress, nicknames, and one-way hash keys are stored via Google Firebase (Anonymous Authentication and Cloud Firestore) solely to render the Top 15 leaderboard and restore your game progress. Raw recovery PINs are never stored on your device or in Firestore.
 - No user data is ever sold, rented, or shared with third parties for marketing or advertising.
 
 ### Data Retention & Deletion
@@ -54,7 +54,7 @@ If you have any questions about this Privacy Policy, please contact:
 
 **봄봄 아케이드(BomBom Arcade)**는 사용자의 개인정보를 소중하게 생각합니다.
 - **v1.0.x (오프라인 기본 모드):** 개인정보, 웹 방문 기록, 이용 통계(Analytics) 등 어떠한 데이터도 **수집하거나 외부 서버로 전송·저장하지 않습니다.** 모든 데이터는 기기 내부에만 보관됩니다.
-- **v1.1+ (선택적 온라인 순위표):** 사용자가 직접 별명을 설정해 실시간 순위표에 참여하는 경우에만, 순위 표시 목적으로 설정한 별명(2~10자), 익명 인증 식별자(UID), 게임별 최고 점수, 장착 스킨 ID가 Google Cloud Firestore에 저장됩니다. 실명, 이메일, 전화번호, 웹 방문 기록은 절대 수집하지 않습니다.
+- **v1.1+ (선택적 온라인 순위표 및 클라우드 복구):** 사용자가 직접 별명과 복구용 4자리 PIN을 설정해 순위표 참여 또는 클라우드 백업을 활성화하는 경우에만, 설정한 별명(2~10자), 익명 인증 식별자(UID), 게임별 최고 점수, 보유 별·별조각, 해금/장착 스킨 ID, 단방향 SHA-256 해시 키(원본 PIN 평문은 저장하지 않음)가 Google Cloud Firestore에 저장됩니다. 실명, 이메일, 전화번호, 웹 방문 기록은 절대 수집하지 않습니다.
 
 ### 기기 내 로컬 저장 데이터
 
@@ -73,7 +73,7 @@ If you have any questions about this Privacy Policy, please contact:
 ### 제3자 서비스 및 데이터 공유
 
 - 봄봄 아케이드는 쿠키, 광고 SDK, 분석/추적 도구를 일절 사용하지 않습니다.
-- v1.1+ 실시간 순위표에 참여할 때만 Google Firebase(익명 인증 및 Cloud Firestore)를 통해 별명·점수·스킨 ID를 저장하고 순위표를 표시합니다.
+- v1.1+ 실시간 순위표 또는 클라우드 복구 기능을 사용할 때만 Google Firebase(익명 인증 및 Cloud Firestore)를 통해 별명·게임 기록·단방향 해시 키를 저장하고 순위표 표시 및 기록 복원을 수행합니다. 입력한 4자리 PIN 평문은 기기나 서버 어디에도 저장되지 않습니다.
 - 어떠한 사용자 데이터도 제3자에게 판매, 공유 또는 마케팅 목적으로 제공되지 않습니다.
 
 ### 데이터 보관 및 삭제

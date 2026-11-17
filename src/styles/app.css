@@ -1286,3 +1286,66 @@ dialog::backdrop {
   font-weight: 800;
   color: #9f1848;
 }
+
+.pin-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pin-field-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--ink-primary);
+}
+
+.pin-input {
+  letter-spacing: 0.25em;
+  text-align: center;
+}
+
+.pin-hint {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-secondary);
+}
+
+.dialog-switch-btn {
+  padding: 6px 8px;
+  border: 0;
+  background: transparent;
+  color: #6b21a8;
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.restore-pill-btn {
+  background: #eff7ff;
+  border-color: #b7dafc;
+  color: #164e87;
+}
+
+.restore-preview-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: #f8f5ff;
+  border: 1.5px solid var(--border-soft);
+}
+
+.restore-toast {
+  margin: 8px 14px 0;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: #dff7f4;
+  border: 1.5px solid #8be3d6;
+  color: #0e4f47;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+}

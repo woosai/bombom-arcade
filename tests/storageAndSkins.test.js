@@ -11,6 +11,7 @@ import {
   STORAGE_KEY,
   applyMiniStarReward,
   createDefaultState,
+  hasProgressToOverwrite,
   loadState,
   loadStateSync,
   normalizeState,
@@ -24,6 +25,7 @@ describe('storage normalization and defaults', () => {
       stars: 0,
       starFragments: 0,
       nickname: '',
+      backupKey: '',
       highScores: {
         dodge: 0,
         stack: 0
@@ -42,10 +44,12 @@ describe('storage normalization and defaults', () => {
     expect(normalizeState(undefined)).toEqual(createDefaultState());
     expect(normalizeState('invalid string')).toEqual(createDefaultState());
 
+    const validHexKey = 'a'.repeat(64);
     const normalized = normalizeState({
       stars: -50,
       starFragments: 17,
       nickname: '  봄봄  ',
+      backupKey: 'INVALID_UPPERCASE_KEY',
       highScores: { dodge: 120, stack: 'invalid' },
       unlockedSkins: ['unknown_skin', 'strawberry-slime'],
       equippedSkin: 'gold-unicorn',
@@ -55,6 +59,8 @@ describe('storage normalization and defaults', () => {
     expect(normalized.stars).toBe(0);
     expect(normalized.starFragments).toBe(7);
     expect(normalized.nickname).toBe('봄봄');
+    expect(normalized.backupKey).toBe('');
+    expect(normalizeState({ backupKey: validHexKey }).backupKey).toBe(validHexKey);
     expect(normalized.highScores).toEqual({ dodge: 120, stack: 0 });
     expect(normalized.unlockedSkins).toEqual(['bombom', 'strawberry-slime']);
     expect(normalized.equippedSkin).toBe('bombom');
@@ -314,5 +320,19 @@ describe('storage persistence adapter', () => {
     const saveResult = await saveState({ stars: 10 });
     expect(saveResult.stars).toBe(10);
     expect(consoleErrorSpy).toHaveBeenCalled();
+  });
+
+  it('detects whether local progress would be overwritten by a different backup key', () => {
+    const keyAlpha = 'a'.repeat(64);
+    const keyBeta = 'b'.repeat(64);
+
+    expect(hasProgressToOverwrite(createDefaultState(), keyAlpha)).toBe(false);
+    expect(hasProgressToOverwrite({ stars: 10, backupKey: keyAlpha }, keyAlpha)).toBe(false);
+    expect(hasProgressToOverwrite({ stars: 1, backupKey: '' }, keyAlpha)).toBe(true);
+    expect(hasProgressToOverwrite({ starFragments: 4 }, keyAlpha)).toBe(true);
+    expect(hasProgressToOverwrite({ nickname: '임시별명' }, keyAlpha)).toBe(true);
+    expect(hasProgressToOverwrite({ highScores: { dodge: 50, stack: 0 } }, keyAlpha)).toBe(true);
+    expect(hasProgressToOverwrite({ unlockedSkins: ['bombom', 'rocket-cat'] }, keyAlpha)).toBe(true);
+    expect(hasProgressToOverwrite({ stars: 10, backupKey: keyBeta }, keyAlpha)).toBe(true);
   });
 });
