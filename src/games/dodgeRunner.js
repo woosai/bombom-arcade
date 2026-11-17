@@ -106,18 +106,45 @@ function createBurstParticles(originX, originY, colorPalette, particleCount, ran
   return createdParticles;
 }
 
+// 경과 시간(0~60초 기본 + 45~150초 오버드라이브) 기반 지속 난이도 프로파일 산출 목적
+export function computeDodgeDifficulty(elapsedSeconds) {
+  const safeElapsed = Math.max(0, Number.isFinite(elapsedSeconds) ? elapsedSeconds : 0);
+  const baseRatio = Math.min(1, safeElapsed / 60);
+  const overdriveRatio = Math.min(1, Math.max(0, safeElapsed - 45) / 105);
+
+  return {
+    baseRatio,
+    overdriveRatio,
+    normalSpeedMin: 160 + baseRatio * 170 + overdriveRatio * 180,
+    normalDriftRange: 36 + baseRatio * 68 + overdriveRatio * 76,
+    hazardInterval: Math.max(0.18, 1.05 - baseRatio * 0.63 - overdriveRatio * 0.24),
+    doubleSpawnChance: overdriveRatio * 0.55,
+    fastMeteorSpeed: Math.round(450 + overdriveRatio * 190),
+    warningWaitSeconds: Math.max(0.65, WARNING_WAIT_SECONDS - overdriveRatio * 0.25),
+    warningInterval: Math.max(
+      0.85,
+      3.4 - Math.max(0, safeElapsed - WARNING_START_ELAPSED) * 0.032
+    ),
+    dualWarningChance: safeElapsed >= 75 ? Math.min(0.45, (safeElapsed - 75) / 150) : 0
+  };
+}
+
 // 경과 시간에 따른 일반 운석 생성 목적
-function createNormalHazard(elapsedSeconds, randomFunction) {
-  const difficultyRatio = Math.min(1, elapsedSeconds / 60);
+function createNormalHazard(elapsedSeconds, randomFunction, avoidX = null) {
+  const difficulty = computeDodgeDifficulty(elapsedSeconds);
   const radius = 12 + randomFunction() * 7;
   const horizontalMargin = radius + 6;
-  const x = horizontalMargin + randomFunction() * (DODGE_WIDTH - horizontalMargin * 2);
+  let x = horizontalMargin + randomFunction() * (DODGE_WIDTH - horizontalMargin * 2);
+  if (avoidX !== null && Math.abs(x - avoidX) < 48) {
+    const shiftedX = avoidX < DODGE_WIDTH / 2 ? avoidX + 96 : avoidX - 96;
+    x = clampNumber(shiftedX, horizontalMargin, DODGE_WIDTH - horizontalMargin);
+  }
   return {
     x,
     y: -radius - 6,
     radius,
-    velocityX: (randomFunction() - 0.5) * (36 + difficultyRatio * 68),
-    velocityY: 160 + difficultyRatio * 170 + randomFunction() * 50,
+    velocityX: (randomFunction() - 0.5) * difficulty.normalDriftRange,
+    velocityY: difficulty.normalSpeedMin + randomFunction() * 50,
     rotation: randomFunction() * Math.PI * 2,
     rotationSpeed: (randomFunction() - 0.5) * 4.5,
     isFastMeteor: false
@@ -358,14 +385,17 @@ export function stepDodgeState(
     }
   }
 
-  // 일반 운석 스폰 및 12초 이후 경고 라인·고속 운석 발사 처리
-  const difficultyRatio = Math.min(1, elapsedSeconds / 60);
+  // 일반 운석 스폰 및 18초 이후 경고 라인·고속 운석 발사 처리
+  const difficulty = computeDodgeDifficulty(elapsedSeconds);
   let hazardSpawnTimer = previousState.hazardSpawnTimer - deltaSeconds;
   const activeHazards = [...previousState.hazards];
   if (hazardSpawnTimer <= 0) {
-    activeHazards.push(createNormalHazard(elapsedSeconds, randomFunction));
-    const baseInterval = Math.max(0.32, 1.05 - difficultyRatio * 0.65);
-    hazardSpawnTimer = baseInterval * (0.85 + randomFunction() * 0.3);
+    const firstHazard = createNormalHazard(elapsedSeconds, randomFunction);
+    activeHazards.push(firstHazard);
+    if (randomFunction() < difficulty.doubleSpawnChance) {
+      activeHazards.push(createNormalHazard(elapsedSeconds, randomFunction, firstHazard.x));
+    }
+    hazardSpawnTimer = difficulty.hazardInterval * (0.85 + randomFunction() * 0.3);
   }
 
   const nextWarnings = [];
@@ -378,7 +408,7 @@ export function stepDodgeState(
         y: -18,
         radius: 14,
         velocityX: 0,
-        velocityY: FAST_METEOR_SPEED,
+        velocityY: warning.speed || FAST_METEOR_SPEED,
         rotation: 0,
         rotationSpeed: 6,
         isFastMeteor: true
@@ -395,11 +425,29 @@ export function stepDodgeState(
   if (elapsedSeconds >= WARNING_START_ELAPSED) {
     warningSpawnTimer -= deltaSeconds;
     if (warningSpawnTimer <= 0) {
+      const firstWarningX = 24 + randomFunction() * (DODGE_WIDTH - 48);
       nextWarnings.push({
-        x: 24 + randomFunction() * (DODGE_WIDTH - 48),
-        timer: WARNING_WAIT_SECONDS
+        x: firstWarningX,
+        timer: difficulty.warningWaitSeconds,
+        speed: difficulty.fastMeteorSpeed
       });
-      warningSpawnTimer = Math.max(1.5, 3.4 - (elapsedSeconds - WARNING_START_ELAPSED) * 0.04);
+      if (randomFunction() < difficulty.dualWarningChance) {
+        const rawSecondX = 24 + randomFunction() * (DODGE_WIDTH - 48);
+        const spacedSecondX =
+          Math.abs(rawSecondX - firstWarningX) < 72
+            ? clampNumber(
+                firstWarningX < DODGE_WIDTH / 2 ? firstWarningX + 108 : firstWarningX - 108,
+                24,
+                DODGE_WIDTH - 24
+              )
+            : rawSecondX;
+        nextWarnings.push({
+          x: spacedSecondX,
+          timer: difficulty.warningWaitSeconds,
+          speed: difficulty.fastMeteorSpeed
+        });
+      }
+      warningSpawnTimer = difficulty.warningInterval;
     }
   }
 

@@ -1349,3 +1349,31 @@ dialog::backdrop {
   font-weight: 800;
   text-align: center;
 }
+
+.share-link-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: #fff4f8;
+  border: 1.5px solid #ffc7dc;
+}
+
+.share-link-url {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 800;
+  color: #9f1848;
+  text-decoration: none;
+}
+
+.share-link-copy-btn {
+  flex-shrink: 0;
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 800;
+}

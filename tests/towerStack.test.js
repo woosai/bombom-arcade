@@ -184,10 +184,25 @@ describe('towerStack core logic', () => {
       }
     }
 
-    // 최고 층수에서 속도 상한 340 제한 검증
+    // 15층 이후 가속(+6/층) 및 최고 층수에서 속도 상한 440 제한 검증
+    const midFloorState = {
+      ...state,
+      floor: 19
+    };
+    const topAtMid = midFloorState.blocks[midFloorState.blocks.length - 1];
+    const nextMidState = placeCurrentBlock(
+      {
+        ...midFloorState,
+        movingBlock: { ...midFloorState.movingBlock, x: topAtMid.x }
+      },
+      'PERFECT!',
+      'BONUS!'
+    );
+    expect(Math.abs(nextMidState.movingBlock.velocityX)).toBe(150 + 15 * 4 + 5 * 6);
+
     const highFloorState = {
       ...state,
-      floor: 59
+      floor: 65
     };
     const topAtHigh = highFloorState.blocks[highFloorState.blocks.length - 1];
     const nextHighState = placeCurrentBlock(
@@ -198,7 +213,7 @@ describe('towerStack core logic', () => {
       'PERFECT!',
       'BONUS!'
     );
-    expect(Math.abs(nextHighState.movingBlock.velocityX)).toBe(340);
+    expect(Math.abs(nextHighState.movingBlock.velocityX)).toBe(440);
 
     // 미스 발생 시 게임 오버 전환 및 종료 사운드 이벤트 기록 검증
     const missedState = placeCurrentBlock(

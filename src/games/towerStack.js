@@ -16,7 +16,9 @@ const SLICE_GRAVITY = 680;
 const MAX_DELTA_SECONDS = 0.05;
 const BASE_SPEED = 150;
 const SPEED_STEP_PER_FLOOR = 4;
-const MAX_SPEED = 340;
+const ACCELERATED_FLOOR_THRESHOLD = 15;
+const ACCELERATED_SPEED_STEP = 6;
+const MAX_SPEED = 440;
 const MASCOT_RADIUS = 14;
 const MOVING_BLOCK_HOVER_OFFSET = 34;
 
@@ -178,7 +180,12 @@ export function evaluatePlacement(previousBlock, currentBlock, perfectCombo = 0)
 
 // 층수별 이동 블록 속도 및 시작 방향 계산 보조 함수
 function createNextMovingBlock(nextFloor, blockWidth, blockY) {
-  const speed = Math.min(MAX_SPEED, BASE_SPEED + nextFloor * SPEED_STEP_PER_FLOOR);
+  const earlyFloors = Math.min(nextFloor, ACCELERATED_FLOOR_THRESHOLD);
+  const highFloors = Math.max(0, nextFloor - ACCELERATED_FLOOR_THRESHOLD);
+  const speed = Math.min(
+    MAX_SPEED,
+    BASE_SPEED + earlyFloors * SPEED_STEP_PER_FLOOR + highFloors * ACCELERATED_SPEED_STEP
+  );
   const startsFromLeft = nextFloor % 2 === 0;
   return {
     x: startsFromLeft ? 0 : STACK_WIDTH - blockWidth,

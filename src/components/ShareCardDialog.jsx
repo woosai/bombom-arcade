@@ -2,8 +2,11 @@
 
 import React, { useEffect, useId, useRef, useState } from 'react';
 import {
+  PLAY_URL,
   SHARE_CARD_HEIGHT,
   SHARE_CARD_WIDTH,
+  buildShareInviteText,
+  copyShareInviteText,
   exportCanvasToPngBlob,
   renderShareCardToCanvas,
   shareOrDownloadCard
@@ -53,17 +56,14 @@ export function ShareCardDialog({ open, summary, activeLang, onClose, text }) {
       (canvasRef.current ? await exportCanvasToPngBlob(canvasRef.current) : null);
     if (!activeBlob) return;
 
-    const gameTitle = summary.gameType === 'dodge' ? text.dodgeTitle : text.stackTitle;
-    const shareText =
-      activeLang === 'ko'
-        ? `${text.brandName} - ${gameTitle} ${summary.myName} (${summary.myScore}점)!`
-        : `${text.brandName} - ${gameTitle} ${summary.myName} (${summary.myScore})!`;
+    const shareText = buildShareInviteText({ summary, text, activeLang });
 
     const result = await shareOrDownloadCard({
       blob: activeBlob,
       fileName: `bombom-${summary.gameType}-rank.png`,
       title: text.brandName,
       shareText,
+      shareUrl: PLAY_URL,
       downloadOnly
     });
 
@@ -74,6 +74,13 @@ export function ShareCardDialog({ open, summary, activeLang, onClose, text }) {
     } else if (result.method === 'share') {
       setFeedbackMessage(text.shareCardShared);
     }
+  }
+
+  async function handleCopyInviteLink() {
+    if (!summary) return;
+    const shareText = buildShareInviteText({ summary, text, activeLang });
+    const copied = await copyShareInviteText({ shareText });
+    setFeedbackMessage(copied ? text.shareLinkCopied : text.shareLinkCopyFailed);
   }
 
   return (
@@ -104,6 +111,24 @@ export function ShareCardDialog({ open, summary, activeLang, onClose, text }) {
           height={SHARE_CARD_HEIGHT}
           className="share-preview-canvas"
         />
+      </div>
+
+      <div className="share-link-box">
+        <a
+          href={PLAY_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="share-link-url"
+        >
+          {PLAY_URL}
+        </a>
+        <button
+          type="button"
+          className="header-btn share-link-copy-btn"
+          onClick={handleCopyInviteLink}
+        >
+          <span aria-hidden="true">🔗</span> {text.copyInviteLinkBtn}
+        </button>
       </div>
 
       {feedbackMessage && (

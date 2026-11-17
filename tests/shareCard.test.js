@@ -1,8 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  PLAY_URL,
   SHARE_CARD_HEIGHT,
   SHARE_CARD_WIDTH,
+  buildShareInviteText,
   buildShareCardSummary,
+  copyShareInviteText,
   renderShareCardToCanvas,
   shareOrDownloadCard
 } from '../src/utils/shareCard.js';
@@ -149,5 +152,47 @@ describe('shareOrDownloadCard delivery channels', () => {
     expect(anchorStub.download).toBe('bombom-ranking.png');
     expect(anchorStub.click).toHaveBeenCalledTimes(1);
     expect(urlStub.revokeObjectURL).toHaveBeenCalledWith('blob:mock-url');
+  });
+
+  it('builds invite text containing clickable play URL and passes url when supported', async () => {
+    const inviteText = buildShareInviteText({
+      summary: { gameType: 'dodge', myName: '봄봄', myScore: 420 },
+      text: translations.ko,
+      activeLang: 'ko'
+    });
+    expect(inviteText).toContain(PLAY_URL);
+    expect(inviteText).toContain('420');
+
+    const shareMock = vi.fn().mockResolvedValue(undefined);
+    const navigatorStub = {
+      canShare: vi.fn((payload) => Boolean(payload?.url)),
+      share: shareMock
+    };
+
+    const shareResult = await shareOrDownloadCard({
+      blob: sampleBlob,
+      fileName: 'bombom-ranking.png',
+      title: '봄봄 아케이드',
+      shareText: inviteText,
+      shareUrl: PLAY_URL,
+      navigatorObject: navigatorStub
+    });
+
+    expect(shareResult).toEqual({ method: 'share' });
+    expect(shareMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: '봄봄 아케이드',
+        text: inviteText,
+        url: PLAY_URL
+      })
+    );
+
+    const writeTextMock = vi.fn().mockResolvedValue(undefined);
+    const copied = await copyShareInviteText({
+      shareText: inviteText,
+      navigatorObject: { clipboard: { writeText: writeTextMock } }
+    });
+    expect(copied).toBe(true);
+    expect(writeTextMock).toHaveBeenCalledWith(inviteText);
   });
 });

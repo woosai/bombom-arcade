@@ -4,6 +4,7 @@ import { drawSkinMascot, getSkinById } from '../games/skins.js';
 
 export const SHARE_CARD_WIDTH = 720;
 export const SHARE_CARD_HEIGHT = 900;
+export const PLAY_URL = 'https://woosai.github.io/bombom-arcade/';
 const SHARE_URL_LABEL = 'woosai.github.io/bombom-arcade';
 
 function drawRoundedBox(context, originX, originY, boxWidth, boxHeight, radius) {
@@ -233,12 +234,41 @@ function triggerBlobDownload(blob, fileName, documentObject, urlObject) {
   urlObject.revokeObjectURL(objectUrl);
 }
 
+export function buildShareInviteText({ summary, text, activeLang, playUrl = PLAY_URL }) {
+  const gameTitle = summary.gameType === 'dodge' ? text.dodgeTitle : text.stackTitle;
+  if (activeLang === 'ko') {
+    return `${text.brandName} - ${gameTitle} ${summary.myName} (${summary.myScore}점)!\n같이 한 판 도전해 볼래? 👉 ${playUrl}`;
+  }
+  return `${text.brandName} - ${gameTitle} ${summary.myName} (${summary.myScore})!\nThink you can beat this score? 👉 ${playUrl}`;
+}
+
+export async function copyShareInviteText({
+  shareText,
+  navigatorObject = typeof navigator !== 'undefined' ? navigator : undefined
+}) {
+  if (
+    !shareText ||
+    !navigatorObject?.clipboard ||
+    typeof navigatorObject.clipboard.writeText !== 'function'
+  ) {
+    return false;
+  }
+  try {
+    await navigatorObject.clipboard.writeText(shareText);
+    return true;
+  } catch (copyError) {
+    console.warn('Failed to copy share invite text:', copyError);
+    return false;
+  }
+}
+
 // Web Share 파일 공유 -> 클립보드 이미지 복사 -> PNG 파일 다운로드 순 폴백 전달 목적
 export async function shareOrDownloadCard({
   blob,
   fileName = 'bombom-ranking.png',
   title,
   shareText,
+  shareUrl = PLAY_URL,
   downloadOnly = false,
   navigatorObject = typeof navigator !== 'undefined' ? navigator : undefined,
   documentObject = typeof document !== 'undefined' ? document : undefined,
@@ -246,17 +276,30 @@ export async function shareOrDownloadCard({
 }) {
   if (!downloadOnly && navigatorObject && typeof File !== 'undefined') {
     const shareFile = new File([blob], fileName, { type: 'image/png' });
+    const canShareWithUrl =
+      Boolean(shareUrl) &&
+      typeof navigatorObject.canShare === 'function' &&
+      navigatorObject.canShare({
+        files: [shareFile],
+        title,
+        text: shareText,
+        url: shareUrl
+      });
     const canShareFiles =
       typeof navigatorObject.canShare === 'function' &&
       navigatorObject.canShare({ files: [shareFile] });
 
-    if (canShareFiles && typeof navigatorObject.share === 'function') {
+    if ((canShareWithUrl || canShareFiles) && typeof navigatorObject.share === 'function') {
       try {
-        await navigatorObject.share({
+        const sharePayload = {
           files: [shareFile],
           title,
           text: shareText
-        });
+        };
+        if (canShareWithUrl) {
+          sharePayload.url = shareUrl;
+        }
+        await navigatorObject.share(sharePayload);
         return { method: 'share' };
       } catch (shareError) {
         if (shareError?.name === 'AbortError') {

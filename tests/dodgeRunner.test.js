@@ -3,6 +3,7 @@ import {
   DODGE_HEIGHT,
   DODGE_WIDTH,
   checkCircleCollision,
+  computeDodgeDifficulty,
   createInitialDodgeState,
   mountDodgeRunner,
   stepDodgeState
@@ -469,5 +470,30 @@ describe('dodgeRunner core mechanics', () => {
 
     runner.destroy();
     vi.unstubAllGlobals();
+  });
+
+  it('continues escalating speed, spawn density, and double-meteor pressure past 60s', () => {
+    const startProfile = computeDodgeDifficulty(0);
+    const midProfile = computeDodgeDifficulty(60);
+    const lateProfile = computeDodgeDifficulty(150);
+
+    expect(midProfile.normalSpeedMin).toBeGreaterThan(startProfile.normalSpeedMin);
+    expect(lateProfile.normalSpeedMin).toBeGreaterThan(midProfile.normalSpeedMin);
+    expect(lateProfile.hazardInterval).toBeLessThan(midProfile.hazardInterval);
+    expect(lateProfile.doubleSpawnChance).toBeGreaterThan(0);
+    expect(lateProfile.fastMeteorSpeed).toBeGreaterThan(450);
+    expect(lateProfile.warningWaitSeconds).toBeLessThan(0.9);
+    expect(lateProfile.warningInterval).toBeLessThan(midProfile.warningInterval);
+    expect(lateProfile.dualWarningChance).toBeGreaterThan(0);
+
+    // 150초 시점에서 한 번의 스폰 주기에 2개의 일반 운석이 동시 생성되는지 검증
+    let lateState = createInitialDodgeState();
+    lateState.elapsedSeconds = 150;
+    lateState.hazardSpawnTimer = 0.01;
+    lateState.pickupSpawnTimer = 99;
+    lateState.warningSpawnTimer = 99;
+
+    lateState = stepDodgeState(lateState, {}, 0.02, createFixedRandom(0.1));
+    expect(lateState.hazards.length).toBe(2);
   });
 });
