@@ -17,6 +17,7 @@ export function SkinShop({
       <div className="shop-intro">
         <h1 className="shop-title">{text.skinShopTitle}</h1>
         <p className="shop-subtitle">{text.skinShopSub}</p>
+        <p className="shop-exchange-hint">{text.starExchangeHint}</p>
       </div>
 
       <div className="skin-grid">
@@ -54,7 +55,7 @@ export function SkinShop({
                 className="skin-action-btn is-affordable"
                 onClick={() => onUnlockSkin(skinItem.id)}
               >
-                {skinItem.cost} <span aria-hidden="true">★</span>{' '}
+                {skinItem.cost} <span aria-hidden="true">🌟</span>{' '}
                 {text.unlockWithStars}
               </button>
             );
@@ -65,7 +66,7 @@ export function SkinShop({
                 className="skin-action-btn is-locked"
                 disabled
               >
-                {skinItem.cost} <span aria-hidden="true">★</span> (
+                {skinItem.cost} <span aria-hidden="true">🌟</span> (
                 {text.needMoreStars})
               </button>
             );

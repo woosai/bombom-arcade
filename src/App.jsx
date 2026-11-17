@@ -12,7 +12,13 @@ import { SKINS, equipSkin, unlockSkin } from './games/skins.js';
 import { resolveLanguage, translations } from './i18n/translations.js';
 import { submitLeaderboardScore } from './utils/leaderboard.js';
 import { usePwaInstall } from './utils/pwaInstall.js';
-import { createDefaultState, loadState, saveState } from './utils/storage.js';
+import {
+  applyMiniStarReward,
+  createDefaultState,
+  loadState,
+  loadStateSync,
+  saveState
+} from './utils/storage.js';
 
 export function App() {
   const isExtensionContext =
@@ -23,7 +29,10 @@ export function App() {
     (typeof window !== 'undefined' &&
       new URLSearchParams(window.location.search).get('mode') === 'full');
 
-  const [appState, setAppState] = useState(() => createDefaultState());
+  // 일반 웹·모바일에서 새로고침 시 별명/기록 깜빡임을 없애기 위한 동기 초기화 목적
+  const [appState, setAppState] = useState(() =>
+    isExtensionContext ? createDefaultState() : loadStateSync()
+  );
   const appStateRef = useRef(appState);
   appStateRef.current = appState;
 
@@ -90,21 +99,30 @@ export function App() {
   }
 
   function handleGameOverPersist(gameType, result) {
-    const earnedStars = Number.isFinite(result?.starsEarned)
+    const earnedMiniStars = Number.isFinite(result?.starsEarned)
       ? Math.max(0, Math.floor(result.starsEarned))
       : 0;
     const finalScore = Number.isFinite(result?.score)
       ? Math.max(0, Math.floor(result.score))
       : 0;
 
-    const nextState = commitStateUpdate((previousState) => ({
-      ...previousState,
-      stars: previousState.stars + earnedStars,
-      highScores: {
-        ...previousState.highScores,
-        [gameType]: Math.max(previousState.highScores[gameType] || 0, finalScore)
-      }
-    }));
+    let rewardSummary = { gainedSkinStars: 0, nextFragments: 0 };
+    const nextState = commitStateUpdate((previousState) => {
+      rewardSummary = applyMiniStarReward(
+        previousState.stars,
+        previousState.starFragments,
+        earnedMiniStars
+      );
+      return {
+        ...previousState,
+        stars: rewardSummary.nextStars,
+        starFragments: rewardSummary.nextFragments,
+        highScores: {
+          ...previousState.highScores,
+          [gameType]: Math.max(previousState.highScores[gameType] || 0, finalScore)
+        }
+      };
+    });
 
     if (nextState.nickname) {
       submitLeaderboardScore({
@@ -116,6 +134,8 @@ export function App() {
         console.warn('Leaderboard sync skipped:', syncError);
       });
     }
+
+    return rewardSummary;
   }
 
   function handleSaveNickname(newNickname) {

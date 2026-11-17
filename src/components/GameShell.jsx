@@ -136,15 +136,24 @@ export function GameShell({
       hasReportedGameOverRef.current = true;
       const previousBest = highScoreRef.current || 0;
       const isNewRecord = (result.score || 0) > previousBest;
+      let rewardSummary = {
+        gainedSkinStars: Math.floor((result.starsEarned || 0) / 10),
+        nextFragments: (result.starsEarned || 0) % 10
+      };
+      if (typeof gameOverPersistRef.current === 'function') {
+        const persisted = gameOverPersistRef.current(gameType, result);
+        if (persisted && typeof persisted.gainedSkinStars === 'number') {
+          rewardSummary = persisted;
+        }
+      }
       setGameOverResult({
         score: result.score || 0,
         starsEarned: result.starsEarned || 0,
+        gainedSkinStars: rewardSummary.gainedSkinStars,
+        nextFragments: rewardSummary.nextFragments,
         floor: typeof result.floor === 'number' ? result.floor : null,
         isNewRecord
       });
-      if (typeof gameOverPersistRef.current === 'function') {
-        gameOverPersistRef.current(gameType, result);
-      }
     }
 
     const commonOptions = {
@@ -396,13 +405,25 @@ export function GameShell({
                   </strong>
                 </div>
               )}
-              <div className="result-stat-row result-stat-stars">
+              <div className="result-stat-row">
                 <span className="result-stat-label">
-                  {text.earnedStarsLabel}
+                  {text.miniStarsLabel}
                 </span>
                 <strong className="result-stat-value">
-                  +{gameOverResult.starsEarned}{' '}
+                  {gameOverResult.starsEarned}{' '}
                   <span aria-hidden="true">★</span>
+                </strong>
+              </div>
+              <div className="result-stat-row result-stat-stars">
+                <span className="result-stat-label">
+                  {text.earnedGoldStarsLabel}
+                </span>
+                <strong className="result-stat-value">
+                  +{gameOverResult.gainedSkinStars}{' '}
+                  <span aria-hidden="true">🌟</span>
+                  <span className="result-fragments-tag">
+                    {' '}({text.fragmentsProgressLabel} {gameOverResult.nextFragments}/10)
+                  </span>
                 </strong>
               </div>
             </div>

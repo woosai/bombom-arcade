@@ -9,8 +9,10 @@ import {
 } from '../src/games/skins.js';
 import {
   STORAGE_KEY,
+  applyMiniStarReward,
   createDefaultState,
   loadState,
+  loadStateSync,
   normalizeState,
   saveState
 } from '../src/utils/storage.js';
@@ -20,6 +22,7 @@ describe('storage normalization and defaults', () => {
     const defaultState = createDefaultState();
     expect(defaultState).toEqual({
       stars: 0,
+      starFragments: 0,
       nickname: '',
       highScores: {
         dodge: 0,
@@ -41,6 +44,7 @@ describe('storage normalization and defaults', () => {
 
     const normalized = normalizeState({
       stars: -50,
+      starFragments: 17,
       nickname: '  봄봄  ',
       highScores: { dodge: 120, stack: 'invalid' },
       unlockedSkins: ['unknown_skin', 'strawberry-slime'],
@@ -49,6 +53,7 @@ describe('storage normalization and defaults', () => {
     });
 
     expect(normalized.stars).toBe(0);
+    expect(normalized.starFragments).toBe(7);
     expect(normalized.nickname).toBe('봄봄');
     expect(normalized.highScores).toEqual({ dodge: 120, stack: 0 });
     expect(normalized.unlockedSkins).toEqual(['bombom', 'strawberry-slime']);
@@ -258,6 +263,32 @@ describe('storage persistence adapter', () => {
 
     const reloaded = await loadState();
     expect(reloaded.stars).toBe(99);
+
+    const syncLoaded = loadStateSync();
+    expect(syncLoaded.stars).toBe(99);
+  });
+
+  it('converts 10 mini stars into 1 gold skin star and carries over remaining fragments', () => {
+    const firstRun = applyMiniStarReward(0, 0, 133);
+    expect(firstRun).toEqual({
+      nextStars: 13,
+      nextFragments: 3,
+      gainedSkinStars: 13
+    });
+
+    const secondRun = applyMiniStarReward(firstRun.nextStars, firstRun.nextFragments, 9);
+    expect(secondRun).toEqual({
+      nextStars: 14,
+      nextFragments: 2,
+      gainedSkinStars: 1
+    });
+
+    const zeroRun = applyMiniStarReward(14, 2, 0);
+    expect(zeroRun).toEqual({
+      nextStars: 14,
+      nextFragments: 2,
+      gainedSkinStars: 0
+    });
   });
 
   it('handles storage errors gracefully without throwing', async () => {

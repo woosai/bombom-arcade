@@ -43,7 +43,7 @@ export function Header({
       <div className="header-right">
         <div className="star-chip" aria-label={`${text.starsLabel} ${stars}`}>
           <span className="star-chip-icon" aria-hidden="true">
-            ★
+            🌟
           </span>
           <span className="star-chip-value">{stars}</span>
         </div>

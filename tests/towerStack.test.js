@@ -70,7 +70,7 @@ describe('towerStack core logic', () => {
     expect(result.trimmedSlice).toBeNull();
     expect(result.perfectCombo).toBe(3);
     expect(result.bonusTriggered).toBe(false);
-    expect(result.starsEarned).toBe(2);
+    expect(result.starsEarned).toBe(5);
 
     const negativeDeltaResult = evaluatePlacement(
       previousBlock,
@@ -91,7 +91,7 @@ describe('towerStack core logic', () => {
     expect(expandedResult.perfectCombo).toBe(5);
     expect(expandedResult.bonusTriggered).toBe(true);
     expect(expandedResult.placedBlock.width).toBe(116);
-    expect(expandedResult.starsEarned).toBe(2);
+    expect(expandedResult.starsEarned).toBe(5);
 
     // 최대 너비 160px 상한 제한 검증
     const widePrevious = { x: 108, y: 260, width: 152, height: 22, colorIndex: 4 };
@@ -115,7 +115,7 @@ describe('towerStack core logic', () => {
     expect(rightResult.trimmedSlice.width).toBe(20);
     expect(rightResult.perfectCombo).toBe(0);
     expect(rightResult.bonusTriggered).toBe(false);
-    expect(rightResult.starsEarned).toBe(1);
+    expect(rightResult.starsEarned).toBe(2);
 
     // 좌측 돌출 배치 검증
     const leftCurrent = { x: 84, y: 348, width: 160, height: 22, colorIndex: 1 };
@@ -127,7 +127,7 @@ describe('towerStack core logic', () => {
     expect(leftResult.trimmedSlice.x).toBe(84);
     expect(leftResult.trimmedSlice.width).toBe(20);
     expect(leftResult.perfectCombo).toBe(0);
-    expect(leftResult.starsEarned).toBe(1);
+    expect(leftResult.starsEarned).toBe(2);
   });
 
   it('evaluates missed placement when overlapWidth <= 2', () => {
@@ -411,7 +411,7 @@ describe('mountTowerStack canvas engine', () => {
     expect(onHudUpdate).toHaveBeenLastCalledWith(
       expect.objectContaining({
         floor: 1,
-        starsEarned: 2,
+        starsEarned: 5,
         combo: 1
       })
     );

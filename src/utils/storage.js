@@ -3,6 +3,7 @@
 import { SKINS } from '../games/skins.js';
 
 export const STORAGE_KEY = 'bombom_arcade_v1';
+export const MINI_STARS_PER_GOLD_STAR = 10;
 
 const VALID_SKIN_IDENTIFIERS = new Set(SKINS.map((skinItem) => skinItem.id));
 
@@ -10,6 +11,7 @@ const VALID_SKIN_IDENTIFIERS = new Set(SKINS.map((skinItem) => skinItem.id));
 export function createDefaultState() {
   return {
     stars: 0,
+    starFragments: 0,
     nickname: '',
     highScores: {
       dodge: 0,
@@ -24,6 +26,27 @@ export function createDefaultState() {
   };
 }
 
+// 인게임 작은 별(10개) -> 스킨 황금별(1개) 환산 및 자투리 조각 이월 목적
+export function applyMiniStarReward(currentStars, currentFragments, earnedMiniStars) {
+  const safeStars = Number.isFinite(currentStars) && currentStars >= 0
+    ? Math.floor(currentStars)
+    : 0;
+  const safeFragments = Number.isFinite(currentFragments) && currentFragments >= 0
+    ? Math.floor(currentFragments) % MINI_STARS_PER_GOLD_STAR
+    : 0;
+  const safeEarned = Number.isFinite(earnedMiniStars) && earnedMiniStars >= 0
+    ? Math.floor(earnedMiniStars)
+    : 0;
+
+  const totalFragments = safeFragments + safeEarned;
+  const gainedSkinStars = Math.floor(totalFragments / MINI_STARS_PER_GOLD_STAR);
+  return {
+    nextStars: safeStars + gainedSkinStars,
+    nextFragments: totalFragments % MINI_STARS_PER_GOLD_STAR,
+    gainedSkinStars
+  };
+}
+
 // 비정상 데이터 및 누락 필드 복원 정규화 목적
 export function normalizeState(rawState) {
   const defaultState = createDefaultState();
@@ -33,6 +56,10 @@ export function normalizeState(rawState) {
 
   const validStars = Number.isFinite(rawState.stars) && rawState.stars >= 0
     ? Math.floor(rawState.stars)
+    : 0;
+
+  const validStarFragments = Number.isFinite(rawState.starFragments) && rawState.starFragments >= 0
+    ? Math.floor(rawState.starFragments) % MINI_STARS_PER_GOLD_STAR
     : 0;
 
   const validNickname = typeof rawState.nickname === 'string'
@@ -73,6 +100,7 @@ export function normalizeState(rawState) {
 
   return {
     stars: validStars,
+    starFragments: validStarFragments,
     nickname: validNickname,
     highScores: {
       dodge: validDodgeScore,
@@ -87,6 +115,19 @@ export function normalizeState(rawState) {
   };
 }
 
+// 일반 웹·모바일 환경에서 첫 렌더 깜빡임 방지를 위한 동기 로드 목적
+export function loadStateSync() {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      const serializedItem = localStorage.getItem(STORAGE_KEY);
+      return serializedItem ? normalizeState(JSON.parse(serializedItem)) : createDefaultState();
+    }
+  } catch (loadError) {
+    console.error('Failed to synchronously load BomBom Arcade state:', loadError);
+  }
+  return createDefaultState();
+}
+
 // Chrome Storage 및 LocalStorage 기반 영속 상태 비동기 로딩 목적
 export async function loadState() {
   try {
@@ -94,10 +135,7 @@ export async function loadState() {
       const storageRecord = await chrome.storage.local.get(STORAGE_KEY);
       return normalizeState(storageRecord[STORAGE_KEY]);
     }
-    if (typeof localStorage !== 'undefined') {
-      const serializedItem = localStorage.getItem(STORAGE_KEY);
-      return serializedItem ? normalizeState(JSON.parse(serializedItem)) : createDefaultState();
-    }
+    return loadStateSync();
   } catch (loadError) {
     console.error('Failed to load BomBom Arcade state:', loadError);
   }

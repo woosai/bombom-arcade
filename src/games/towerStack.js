@@ -116,7 +116,7 @@ export function evaluatePlacement(previousBlock, currentBlock, perfectCombo = 0)
       trimmedSlice: null,
       perfectCombo: nextPerfectCombo,
       bonusTriggered,
-      starsEarned: 2
+      starsEarned: 5
     };
   }
 
@@ -172,7 +172,7 @@ export function evaluatePlacement(previousBlock, currentBlock, perfectCombo = 0)
         : null,
     perfectCombo: 0,
     bonusTriggered: false,
-    starsEarned: 1
+    starsEarned: 2
   };
 }
 
