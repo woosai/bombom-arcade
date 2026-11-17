@@ -104,6 +104,7 @@ Questions or suggestions? Reach out anytime at [YOUR_CONTACT_EMAIL].
 | Screenshot 2 [RECOMMENDED] | 1280×800 | ✅ Ready | `screenshots/ko/02-dodge-ko-1280x800.png` / `screenshots/en/02-dodge-en-1280x800.png` |
 | Screenshot 3 [RECOMMENDED] | 1280×800 | ✅ Ready | `screenshots/ko/03-stack-ko-1280x800.png` / `screenshots/en/03-stack-en-1280x800.png` |
 | Screenshot 4 | 1280×800 | ✅ Ready | `screenshots/ko/04-skins-ko-1280x800.png` / `screenshots/en/04-skins-en-1280x800.png` |
+| Screenshot 5 | 1280×800 | ✅ Ready | `screenshots/ko/05-leaderboard-ko-1280x800.png` / `screenshots/en/05-leaderboard-en-1280x800.png` |
 
 ---
 
