@@ -1,6 +1,6 @@
 // 모바일 웹 홈 화면 설치 및 오프라인 실행을 위한 경량 서비스 워커
 
-const CACHE_NAME = 'bombom-arcade-web-v4';
+const CACHE_NAME = 'bombom-arcade-web-v5';
 const CORE_ASSETS = ['./', './index.html', './site.webmanifest', './icons/icon-192.png'];
 
 self.addEventListener('install', (event) => {

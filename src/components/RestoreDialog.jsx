@@ -158,7 +158,7 @@ export function RestoreDialog({
             <div className="result-stat-row">
               <span className="result-stat-label">{text.bestScore}</span>
               <strong className="result-stat-value">
-                🌠 {pendingRestoredState.highScores.dodge} · 🏰 {pendingRestoredState.highScores.stack}
+                🌠 {pendingRestoredState.highScores.dodge} · 🏰 {pendingRestoredState.highScores.stack} · 🫧 {pendingRestoredState.highScores.merge || 0}
               </strong>
             </div>
           </div>

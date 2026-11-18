@@ -22,6 +22,16 @@ export const SKINS = [
     blockPalette: ['#FF5D8F', '#FF85A1', '#FBB1BD', '#FFCCD5']
   },
   {
+    id: 'mint-dino',
+    cost: 35,
+    name: { ko: '민트 공룡', en: 'Mint Dino' },
+    badge: '🦕',
+    primary: '#38D399',
+    secondary: '#A7F3D0',
+    trail: '#6EE7B7',
+    blockPalette: ['#38D399', '#6EE7B7', '#A7F3D0', '#5EEAD4']
+  },
+  {
     id: 'rocket-cat',
     cost: 50,
     name: { ko: '로켓 냥이', en: 'Rocket Kitty' },
@@ -32,6 +42,16 @@ export const SKINS = [
     blockPalette: ['#4CC9F0', '#72EFDD', '#4895EF', '#B5179E']
   },
   {
+    id: 'honey-bear',
+    cost: 65,
+    name: { ko: '꿀단지 곰돌이', en: 'Honey Bear' },
+    badge: '🐻',
+    primary: '#F59E0B',
+    secondary: '#FDE68A',
+    trail: '#FEF3C7',
+    blockPalette: ['#F59E0B', '#FBBF24', '#FDE68A', '#FB923C']
+  },
+  {
     id: 'ribbon-bunny',
     cost: 80,
     name: { ko: '리본 토끼', en: 'Ribbon Bunny' },
@@ -40,6 +60,16 @@ export const SKINS = [
     secondary: '#FF99C8',
     trail: '#E0C3FC',
     blockPalette: ['#B388EB', '#D0A5F5', '#FF99C8', '#FCF6BD']
+  },
+  {
+    id: 'angel-puppy',
+    cost: 100,
+    name: { ko: '천사 강아지', en: 'Angel Puppy' },
+    badge: '🐶',
+    primary: '#93C5FD',
+    secondary: '#EFF6FF',
+    trail: '#DBEAFE',
+    blockPalette: ['#93C5FD', '#BFDBFE', '#FDE68A', '#E0E7FF']
   },
   {
     id: 'rainbow-cloud',
@@ -60,6 +90,16 @@ export const SKINS = [
     secondary: '#FF70A6',
     trail: '#FFF3B0',
     blockPalette: ['#FFD166', '#FFE66D', '#FF70A6', '#A0C4FF']
+  },
+  {
+    id: 'galaxy-fairy',
+    cost: 240,
+    name: { ko: '은하수 요정', en: 'Galaxy Fairy' },
+    badge: '🧚',
+    primary: '#8B5CF6',
+    secondary: '#F472B6',
+    trail: '#DDD6FE',
+    blockPalette: ['#8B5CF6', '#EC4899', '#38BDF8', '#FDE047']
   }
 ];
 
@@ -211,6 +251,49 @@ export function drawSkinMascot(context, skinId, centerX, centerY, radius, timeSe
     context.arc(0, -radius * 1.05, radius * 0.16, 0, Math.PI * 2);
     context.arc(-radius * 0.25, -radius * 0.95, radius * 0.1, 0, Math.PI * 2);
     context.arc(radius * 0.25, -radius * 0.95, radius * 0.1, 0, Math.PI * 2);
+    context.fill();
+  } else if (skinId === 'mint-dino') {
+    // 민트 아기공룡 둥근 뿔·등지느러미 장식 렌더링 목적
+    context.fillStyle = '#10B981';
+    for (let crestIndex = -1; crestIndex <= 1; crestIndex += 1) {
+      context.beginPath();
+      context.arc(crestIndex * radius * 0.34, -radius * (1.0 - Math.abs(crestIndex) * 0.12), radius * 0.18, 0, Math.PI * 2);
+      context.fill();
+    }
+  } else if (skinId === 'honey-bear') {
+    // 꿀단지 곰돌이 둥근 양쪽 귀 렌더링 목적
+    context.fillStyle = '#F59E0B';
+    context.beginPath();
+    context.arc(-radius * 0.68, -radius * 0.68, radius * 0.32, 0, Math.PI * 2);
+    context.arc(radius * 0.68, -radius * 0.68, radius * 0.32, 0, Math.PI * 2);
+    context.fill();
+    context.fillStyle = '#FEF3C7';
+    context.beginPath();
+    context.arc(-radius * 0.68, -radius * 0.68, radius * 0.16, 0, Math.PI * 2);
+    context.arc(radius * 0.68, -radius * 0.68, radius * 0.16, 0, Math.PI * 2);
+    context.fill();
+  } else if (skinId === 'angel-puppy') {
+    // 천사 강아지 처진 귀와 머리 위 황금 천사 링 렌더링 목적
+    context.fillStyle = '#60A5FA';
+    context.beginPath();
+    context.ellipse(-radius * 0.84, radius * 0.05, radius * 0.22, radius * 0.46, 0.25, 0, Math.PI * 2);
+    context.ellipse(radius * 0.84, radius * 0.05, radius * 0.22, radius * 0.46, -0.25, 0, Math.PI * 2);
+    context.fill();
+    context.strokeStyle = '#FDE047';
+    context.lineWidth = Math.max(1.5, radius * 0.12);
+    context.beginPath();
+    context.ellipse(0, -radius * 1.18, radius * 0.42, radius * 0.14, 0, 0, Math.PI * 2);
+    context.stroke();
+  } else if (skinId === 'galaxy-fairy') {
+    // 은하수 요정 반짝이는 날개 및 별빛 후광 렌더링 목적
+    context.fillStyle = 'rgba(221, 214, 254, 0.85)';
+    context.beginPath();
+    context.ellipse(-radius * 0.92, -radius * 0.15, radius * 0.42, radius * 0.26, -0.5, 0, Math.PI * 2);
+    context.ellipse(radius * 0.92, -radius * 0.15, radius * 0.42, radius * 0.26, 0.5, 0, Math.PI * 2);
+    context.fill();
+    context.fillStyle = '#FDE047';
+    context.beginPath();
+    context.arc(0, -radius * 1.08, radius * 0.18, 0, Math.PI * 2);
     context.fill();
   }
 

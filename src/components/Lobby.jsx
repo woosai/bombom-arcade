@@ -117,51 +117,55 @@ export function Lobby({
       )}
 
       <div className="lobby-games">
-        <article className="game-card game-card-dodge">
-          <div className="game-card-top">
-            <div className="game-card-heading">
-              <span className="game-emoji" aria-hidden="true">
-                🌠
+        {[
+          {
+            id: 'merge',
+            emoji: '🫧',
+            title: text.mergeTitle,
+            desc: text.mergeDesc,
+            control: text.mergeControl,
+            cardClass: 'game-card-merge'
+          },
+          {
+            id: 'dodge',
+            emoji: '🌠',
+            title: text.dodgeTitle,
+            desc: text.dodgeDesc,
+            control: text.dodgeControl,
+            cardClass: 'game-card-dodge'
+          },
+          {
+            id: 'stack',
+            emoji: '🏰',
+            title: text.stackTitle,
+            desc: text.stackDesc,
+            control: text.stackControl,
+            cardClass: 'game-card-stack'
+          }
+        ].map((gameItem) => (
+          <article key={gameItem.id} className={`game-card ${gameItem.cardClass}`}>
+            <div className="game-card-top">
+              <div className="game-card-heading">
+                <span className="game-emoji" aria-hidden="true">
+                  {gameItem.emoji}
+                </span>
+                <h2 className="game-card-title">{gameItem.title}</h2>
+              </div>
+              <span className="best-badge">
+                {text.bestScore} {highScores[gameItem.id] || 0}
               </span>
-              <h2 className="game-card-title">{text.dodgeTitle}</h2>
             </div>
-            <span className="best-badge">
-              {text.bestScore} {highScores.dodge}
-            </span>
-          </div>
-          <p className="game-card-desc">{text.dodgeDesc}</p>
-          <p className="game-card-control">{text.dodgeControl}</p>
-          <button
-            type="button"
-            className="primary-btn play-btn"
-            onClick={() => onSelectGame('dodge')}
-          >
-            {text.playNow}
-          </button>
-        </article>
-
-        <article className="game-card game-card-stack">
-          <div className="game-card-top">
-            <div className="game-card-heading">
-              <span className="game-emoji" aria-hidden="true">
-                🏰
-              </span>
-              <h2 className="game-card-title">{text.stackTitle}</h2>
-            </div>
-            <span className="best-badge">
-              {text.bestScore} {highScores.stack}
-            </span>
-          </div>
-          <p className="game-card-desc">{text.stackDesc}</p>
-          <p className="game-card-control">{text.stackControl}</p>
-          <button
-            type="button"
-            className="primary-btn play-btn"
-            onClick={() => onSelectGame('stack')}
-          >
-            {text.playNow}
-          </button>
-        </article>
+            <p className="game-card-desc">{gameItem.desc}</p>
+            <p className="game-card-control">{gameItem.control}</p>
+            <button
+              type="button"
+              className="primary-btn play-btn"
+              onClick={() => onSelectGame(gameItem.id)}
+            >
+              {text.playNow}
+            </button>
+          </article>
+        ))}
       </div>
 
       <div className="lobby-footer-actions">

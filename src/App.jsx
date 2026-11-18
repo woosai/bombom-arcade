@@ -107,7 +107,7 @@ export function App() {
     if (!targetState?.nickname) {
       return;
     }
-    const gameTypes = ['dodge', 'stack'];
+    const gameTypes = ['dodge', 'stack', 'merge'];
     for (let index = 0; index < gameTypes.length; index += 1) {
       const gameType = gameTypes[index];
       const bestScore = targetState.highScores[gameType] || 0;
@@ -289,7 +289,7 @@ export function App() {
         />
       )}
 
-      {(currentScreen === 'dodge' || currentScreen === 'stack') && (
+      {(currentScreen === 'dodge' || currentScreen === 'stack' || currentScreen === 'merge') && (
         <GameShell
           key={currentScreen}
           gameType={currentScreen}

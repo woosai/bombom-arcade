@@ -17,7 +17,8 @@ export function createDefaultState() {
     backupKey: '',
     highScores: {
       dodge: 0,
-      stack: 0
+      stack: 0,
+      merge: 0
     },
     unlockedSkins: ['bombom'],
     equippedSkin: 'bombom',
@@ -80,6 +81,10 @@ export function normalizeState(rawState) {
     ? Math.floor(rawState.highScores.stack)
     : 0;
 
+  const validMergeScore = Number.isFinite(rawState.highScores?.merge) && rawState.highScores.merge >= 0
+    ? Math.floor(rawState.highScores.merge)
+    : 0;
+
   const rawUnlockedList = Array.isArray(rawState.unlockedSkins)
     ? rawState.unlockedSkins
     : [];
@@ -111,7 +116,8 @@ export function normalizeState(rawState) {
     backupKey: validBackupKey,
     highScores: {
       dodge: validDodgeScore,
-      stack: validStackScore
+      stack: validStackScore,
+      merge: validMergeScore
     },
     unlockedSkins: normalizedUnlockedSkins,
     equippedSkin: normalizedEquippedSkin,
@@ -134,6 +140,7 @@ export function hasProgressToOverwrite(rawState, targetBackupKey = '') {
     state.starFragments > 0 ||
     state.highScores.dodge > 0 ||
     state.highScores.stack > 0 ||
+    state.highScores.merge > 0 ||
     state.unlockedSkins.length > 1
   );
 }

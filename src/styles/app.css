@@ -294,18 +294,22 @@ button:disabled {
 .lobby-games {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 7px;
 }
 
 .game-card {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 10px 12px;
-  border-radius: 18px;
+  gap: 3px;
+  padding: 8px 11px;
+  border-radius: 16px;
   background: var(--surface-card);
   border: 2px solid var(--border-soft);
   box-shadow: 0 4px 12px rgba(31, 24, 54, 0.05);
+}
+
+.game-card-merge {
+  border-color: #ffd1e3;
 }
 
 .game-card-dodge {

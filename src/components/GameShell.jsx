@@ -8,6 +8,11 @@ import {
 } from '../games/dodgeRunner.js';
 import { drawSkinMascot } from '../games/skins.js';
 import {
+  MERGE_HEIGHT,
+  MERGE_WIDTH,
+  mountStarlightMerge
+} from '../games/starlightMerge.js';
+import {
   STACK_HEIGHT,
   STACK_WIDTH,
   mountTowerStack
@@ -60,10 +65,27 @@ export function GameShell({
   gameOverPersistRef.current = onGameOverPersist;
 
   const isDodge = gameType === 'dodge';
-  const canvasWidth = isDodge ? DODGE_WIDTH : STACK_WIDTH;
-  const canvasHeight = isDodge ? DODGE_HEIGHT : STACK_HEIGHT;
-  const gameTitle = isDodge ? text.dodgeTitle : text.stackTitle;
-  const gameHint = isDodge ? text.dodgeHint : text.stackHint;
+  const isStack = gameType === 'stack';
+  const isMerge = gameType === 'merge';
+  const dimensionsByType = {
+    dodge: { width: DODGE_WIDTH, height: DODGE_HEIGHT },
+    stack: { width: STACK_WIDTH, height: STACK_HEIGHT },
+    merge: { width: MERGE_WIDTH, height: MERGE_HEIGHT }
+  };
+  const { width: canvasWidth, height: canvasHeight } =
+    dimensionsByType[gameType] || dimensionsByType.dodge;
+  const titleByType = {
+    dodge: text.dodgeTitle,
+    stack: text.stackTitle,
+    merge: text.mergeTitle
+  };
+  const hintByType = {
+    dodge: text.dodgeHint,
+    stack: text.stackHint,
+    merge: text.mergeHint
+  };
+  const gameTitle = titleByType[gameType] || text.dodgeTitle;
+  const gameHint = hintByType[gameType] || text.dodgeHint;
 
   // 시작 전 대기 화면용 캔버스 배경 및 마스코트 미리보기 렌더링 목적
   useEffect(() => {
@@ -80,9 +102,9 @@ export function GameShell({
     }
 
     const gradient = context.createLinearGradient(0, 0, 0, canvasHeight);
-    if (isDodge) {
+    if (isDodge || isMerge) {
       gradient.addColorStop(0, '#160F29');
-      gradient.addColorStop(1, '#261848');
+      gradient.addColorStop(1, isMerge ? '#3B2872' : '#261848');
     } else {
       gradient.addColorStop(0, '#7EC8FF');
       gradient.addColorStop(1, '#DFF6E8');
@@ -98,7 +120,7 @@ export function GameShell({
       0
     );
     return undefined;
-  }, [started, isDodge, canvasWidth, canvasHeight, equippedSkinId]);
+  }, [started, isDodge, isMerge, canvasWidth, canvasHeight, equippedSkinId]);
 
   // 게임 시작 시 캔버스 엔진 마운트 및 재시작 시 깨끗한 인스턴스 교체 목적
   useEffect(() => {
@@ -111,7 +133,6 @@ export function GameShell({
     }
 
     hasReportedGameOverRef.current = false;
-    const isDodgeRun = gameType === 'dodge';
 
     function handleSound(eventName) {
       playSoundEffect(eventName, mutedRef.current);
@@ -164,16 +185,26 @@ export function GameShell({
       isPaused: () => pausedRef.current || isGameOverRef.current
     };
 
-    const mountedGame = isDodgeRun
-      ? mountDodgeRunner(canvasElement, {
+    const gameMountHandlers = {
+      dodge: () =>
+        mountDodgeRunner(canvasElement, {
           ...commonOptions,
           feverText: textRef.current.feverBanner
-        })
-      : mountTowerStack(canvasElement, {
+        }),
+      stack: () =>
+        mountTowerStack(canvasElement, {
           ...commonOptions,
           perfectText: textRef.current.perfectText,
           bonusText: textRef.current.bonusBanner
-        });
+        }),
+      merge: () =>
+        mountStarlightMerge(canvasElement, {
+          ...commonOptions,
+          nextLabel: textRef.current.nextOrbLabel
+        })
+    };
+    const mountGame = gameMountHandlers[gameType] || gameMountHandlers.dodge;
+    const mountedGame = mountGame();
 
     return () => {
       mountedGame.destroy();
@@ -285,7 +316,7 @@ export function GameShell({
     <main className="game-main" data-game-type={gameType}>
       <div className="game-title-row">
         <h1 className="game-title">{gameTitle}</h1>
-        {!isDodge && (
+        {isStack && (
           <span className="game-floor-chip">
             {text.floorLabel} {hud.floor}
           </span>
@@ -397,7 +428,7 @@ export function GameShell({
                   {gameOverResult.score}
                 </strong>
               </div>
-              {!isDodge && typeof gameOverResult.floor === 'number' && (
+              {isStack && typeof gameOverResult.floor === 'number' && (
                 <div className="result-stat-row">
                   <span className="result-stat-label">{text.floorLabel}</span>
                   <strong className="result-stat-value">

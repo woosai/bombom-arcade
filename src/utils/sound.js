@@ -64,6 +64,13 @@ const SOUND_PRESETS = {
   place: [
     { waveform: 'triangle', frequency: 261.63, endFrequency: 329.63, duration: 0.07, delay: 0, gain: 0.1 }
   ],
+  drop: [
+    { waveform: 'triangle', frequency: 392, endFrequency: 261.63, duration: 0.06, delay: 0, gain: 0.08 }
+  ],
+  merge: [
+    { waveform: 'square', frequency: 523.25, duration: 0.05, delay: 0, gain: 0.065 },
+    { waveform: 'square', frequency: 783.99, duration: 0.08, delay: 0.045, gain: 0.075 }
+  ],
   perfect: [
     { waveform: 'square', frequency: 523.25, duration: 0.06, delay: 0, gain: 0.07 },
     { waveform: 'square', frequency: 659.25, duration: 0.06, delay: 0.055, gain: 0.075 },

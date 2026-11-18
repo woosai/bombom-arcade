@@ -28,7 +28,8 @@ describe('storage normalization and defaults', () => {
       backupKey: '',
       highScores: {
         dodge: 0,
-        stack: 0
+        stack: 0,
+        merge: 0
       },
       unlockedSkins: ['bombom'],
       equippedSkin: 'bombom',
@@ -61,7 +62,7 @@ describe('storage normalization and defaults', () => {
     expect(normalized.nickname).toBe('봄봄');
     expect(normalized.backupKey).toBe('');
     expect(normalizeState({ backupKey: validHexKey }).backupKey).toBe(validHexKey);
-    expect(normalized.highScores).toEqual({ dodge: 120, stack: 0 });
+    expect(normalized.highScores).toEqual({ dodge: 120, stack: 0, merge: 0 });
     expect(normalized.unlockedSkins).toEqual(['bombom', 'strawberry-slime']);
     expect(normalized.equippedSkin).toBe('bombom');
     expect(normalized.settings).toEqual({ lang: 'auto', muted: false });
@@ -78,7 +79,7 @@ describe('storage normalization and defaults', () => {
 
     const normalized = normalizeState(rawState);
     expect(normalized.stars).toBe(85);
-    expect(normalized.highScores).toEqual({ dodge: 420, stack: 35 });
+    expect(normalized.highScores).toEqual({ dodge: 420, stack: 35, merge: 0 });
     expect(normalized.unlockedSkins).toEqual(['bombom', 'rocket-cat']);
     expect(normalized.equippedSkin).toBe('rocket-cat');
     expect(normalized.settings).toEqual({ lang: 'ko', muted: true });
@@ -86,16 +87,20 @@ describe('storage normalization and defaults', () => {
 });
 
 describe('skin catalog and interactions', () => {
-  it('defines exactly 6 skins with bombom free and required metadata', () => {
-    expect(SKINS).toHaveLength(6);
+  it('defines 10 skins sorted by cost with bombom free and required metadata', () => {
+    expect(SKINS).toHaveLength(10);
 
     const expectedSkins = [
       { id: 'bombom', cost: 0, badge: '⭐' },
       { id: 'strawberry-slime', cost: 25, badge: '🍓' },
+      { id: 'mint-dino', cost: 35, badge: '🦕' },
       { id: 'rocket-cat', cost: 50, badge: '🐱' },
+      { id: 'honey-bear', cost: 65, badge: '🐻' },
       { id: 'ribbon-bunny', cost: 80, badge: '🐰' },
+      { id: 'angel-puppy', cost: 100, badge: '🐶' },
       { id: 'rainbow-cloud', cost: 120, badge: '🌈' },
-      { id: 'gold-unicorn', cost: 180, badge: '🦄' }
+      { id: 'gold-unicorn', cost: 180, badge: '🦄' },
+      { id: 'galaxy-fairy', cost: 240, badge: '🧚' }
     ];
 
     for (const expectedSkin of expectedSkins) {
@@ -331,7 +336,8 @@ describe('storage persistence adapter', () => {
     expect(hasProgressToOverwrite({ stars: 1, backupKey: '' }, keyAlpha)).toBe(true);
     expect(hasProgressToOverwrite({ starFragments: 4 }, keyAlpha)).toBe(true);
     expect(hasProgressToOverwrite({ nickname: '임시별명' }, keyAlpha)).toBe(true);
-    expect(hasProgressToOverwrite({ highScores: { dodge: 50, stack: 0 } }, keyAlpha)).toBe(true);
+    expect(hasProgressToOverwrite({ highScores: { dodge: 50, stack: 0, merge: 0 } }, keyAlpha)).toBe(true);
+    expect(hasProgressToOverwrite({ highScores: { dodge: 0, stack: 0, merge: 120 } }, keyAlpha)).toBe(true);
     expect(hasProgressToOverwrite({ unlockedSkins: ['bombom', 'rocket-cat'] }, keyAlpha)).toBe(true);
     expect(hasProgressToOverwrite({ stars: 10, backupKey: keyBeta }, keyAlpha)).toBe(true);
   });

@@ -8,7 +8,7 @@ rules_version = '2';
 // This security rules file assumes the following data structures:
 //
 // Collection: leaderboards/{gameType}/scores/{userId}
-// Allowed {gameType}: 'dodge' | 'stack'
+// Allowed {gameType}: 'dodge' | 'stack' | 'merge'
 // Document ID {userId}: Firebase Auth UID (Anonymous Auth) matching request.auth.uid
 // Fields (all required, no extraneous fields permitted):
 //   - nickname: string (required, length 2..10) - public player display name
@@ -28,10 +28,11 @@ rules_version = '2';
 //   - nickname: string (required, length 2..10) - player display name
 //   - stars: int (required, range 0..1000000) - golden stars balance
 //   - starFragments: int (required, range 0..9) - mini star fragments toward next golden star
-//   - highScores: map (required, keys exactly ['dodge', 'stack'])
+//   - highScores: map (required, keys ['dodge', 'stack'] plus optional 'merge')
 //       - dodge: int (required, range 0..1000000)
 //       - stack: int (required, range 0..1000000)
-//   - unlockedSkins: list (required, length 1..6, contains 'bombom', all elements valid skin IDs) - unlocked skin IDs
+//       - merge: int (optional, range 0..1000000)
+//   - unlockedSkins: list (required, length 1..10, contains 'bombom', all elements valid skin IDs) - unlocked skin IDs
 //   - equippedSkin: string (required, valid skin ID and present in unlockedSkins) - equipped mascot skin ID
 //   - updatedAt: timestamp (required, must equal request.time / serverTimestamp()) - last backup sync time
 //
@@ -82,7 +83,7 @@ service cloud.firestore {
 
     // Restrict leaderboard subcollections to supported arcade game modes
     function isValidGameType(gameType) {
-      return gameType in ['dodge', 'stack'];
+      return gameType in ['dodge', 'stack', 'merge'];
     }
 
     // Restrict mascot skin IDs to known skins defined in src/games/skins.js
@@ -94,7 +95,11 @@ service cloud.firestore {
           'rocket-cat',
           'ribbon-bunny',
           'rainbow-cloud',
-          'gold-unicorn'
+          'gold-unicorn',
+          'mint-dino',
+          'honey-bear',
+          'angel-puppy',
+          'galaxy-fairy'
         ];
     }
 
@@ -123,18 +128,23 @@ service cloud.firestore {
         data.updatedAt == request.time;
     }
 
-    // Validate nested highScores map keys and integer score bounds
+    // Validate nested highScores map keys and integer score bounds (backward-compatible with v1.1.0)
     function isValidHighScoresMap(highScores) {
-      let allowedGames = ['dodge', 'stack'];
+      let requiredGames = ['dodge', 'stack'];
+      let allowedGames = ['dodge', 'stack', 'merge'];
       return highScores is map &&
-        highScores.keys().hasAll(allowedGames) &&
+        highScores.keys().hasAll(requiredGames) &&
         highScores.keys().hasOnly(allowedGames) &&
         highScores.dodge is int &&
         highScores.dodge >= 0 &&
         highScores.dodge <= 1000000 &&
         highScores.stack is int &&
         highScores.stack >= 0 &&
-        highScores.stack <= 1000000;
+        highScores.stack <= 1000000 &&
+        (!('merge' in highScores) ||
+          (highScores.merge is int &&
+            highScores.merge >= 0 &&
+            highScores.merge <= 1000000));
     }
 
     // Validate unlockedSkins list size, default 'bombom' presence, and allowed skin IDs
@@ -145,11 +155,15 @@ service cloud.firestore {
         'rocket-cat',
         'ribbon-bunny',
         'rainbow-cloud',
-        'gold-unicorn'
+        'gold-unicorn',
+        'mint-dino',
+        'honey-bear',
+        'angel-puppy',
+        'galaxy-fairy'
       ];
       return unlockedSkins is list &&
         unlockedSkins.size() >= 1 &&
-        unlockedSkins.size() <= 6 &&
+        unlockedSkins.size() <= 10 &&
         'bombom' in unlockedSkins &&
         unlockedSkins.hasOnly(allowedSkins);
     }

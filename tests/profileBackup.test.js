@@ -66,7 +66,7 @@ describe('profileBackup pure helpers', () => {
       stars: 2000000,
       starFragments: 18,
       backupKey: profileKey,
-      highScores: { dodge: 540, stack: 25 },
+      highScores: { dodge: 540, stack: 25, merge: 180 },
       unlockedSkins: ['bombom', 'rocket-cat', 'unknown'],
       equippedSkin: 'rocket-cat',
       settings: { lang: 'ko', muted: true }
@@ -76,7 +76,7 @@ describe('profileBackup pure helpers', () => {
       nickname: '봄봄스타',
       stars: 1000000,
       starFragments: 8,
-      highScores: { dodge: 540, stack: 25 },
+      highScores: { dodge: 540, stack: 25, merge: 180 },
       unlockedSkins: ['bombom', 'rocket-cat'],
       equippedSkin: 'rocket-cat'
     });

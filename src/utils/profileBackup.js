@@ -62,7 +62,8 @@ export function serializeProfilePayload(rawState) {
     starFragments: normalized.starFragments,
     highScores: {
       dodge: Math.min(MAX_BACKUP_NUMERIC_VALUE, normalized.highScores.dodge),
-      stack: Math.min(MAX_BACKUP_NUMERIC_VALUE, normalized.highScores.stack)
+      stack: Math.min(MAX_BACKUP_NUMERIC_VALUE, normalized.highScores.stack),
+      merge: Math.min(MAX_BACKUP_NUMERIC_VALUE, normalized.highScores.merge)
     },
     unlockedSkins: normalized.unlockedSkins,
     equippedSkin: normalized.equippedSkin

@@ -7,6 +7,15 @@ export const SHARE_CARD_HEIGHT = 900;
 export const PLAY_URL = 'https://woosai.github.io/bombom-arcade/';
 const SHARE_URL_LABEL = 'woosai.github.io/bombom-arcade';
 
+export function getShareGameTitle(gameType, text) {
+  const titleByType = {
+    dodge: text.dodgeTitle,
+    stack: text.stackTitle,
+    merge: text.mergeTitle
+  };
+  return titleByType[gameType] || text.dodgeTitle;
+}
+
 function drawRoundedBox(context, originX, originY, boxWidth, boxHeight, radius) {
   context.beginPath();
   if (typeof context.roundRect === 'function') {
@@ -97,7 +106,7 @@ export function renderShareCardToCanvas(canvasElement, summary, text, activeLang
   context.stroke();
 
   // 상단 브랜드 배지 및 게임 제목
-  const gameTitle = summary.gameType === 'dodge' ? text.dodgeTitle : text.stackTitle;
+  const gameTitle = getShareGameTitle(summary.gameType, text);
   drawRoundedBox(context, 240, 66, 240, 44, 22);
   context.fillStyle = '#FFE066';
   context.fill();
@@ -235,7 +244,7 @@ function triggerBlobDownload(blob, fileName, documentObject, urlObject) {
 }
 
 export function buildShareInviteText({ summary, text, activeLang, playUrl = PLAY_URL }) {
-  const gameTitle = summary.gameType === 'dodge' ? text.dodgeTitle : text.stackTitle;
+  const gameTitle = getShareGameTitle(summary.gameType, text);
   if (activeLang === 'ko') {
     return `${text.brandName} - ${gameTitle} ${summary.myName} (${summary.myScore}점)!\n같이 한 판 도전해 볼래? 👉 ${playUrl}`;
   }

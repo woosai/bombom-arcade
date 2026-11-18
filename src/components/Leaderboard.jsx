@@ -104,24 +104,22 @@ export function Leaderboard({
       )}
 
       <div className="leaderboard-tabs" role="tablist" aria-label={text.leaderboardTitle}>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={selectedGame === 'dodge'}
-          className={`leaderboard-tab${selectedGame === 'dodge' ? ' is-selected' : ''}`}
-          onClick={() => setSelectedGame('dodge')}
-        >
-          <span aria-hidden="true">🌠</span> {text.dodgeTitle}
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={selectedGame === 'stack'}
-          className={`leaderboard-tab${selectedGame === 'stack' ? ' is-selected' : ''}`}
-          onClick={() => setSelectedGame('stack')}
-        >
-          <span aria-hidden="true">🏰</span> {text.stackTitle}
-        </button>
+        {[
+          { id: 'dodge', emoji: '🌠', label: text.dodgeTitle },
+          { id: 'stack', emoji: '🏰', label: text.stackTitle },
+          { id: 'merge', emoji: '🫧', label: text.mergeTitle }
+        ].map((tabItem) => (
+          <button
+            key={tabItem.id}
+            type="button"
+            role="tab"
+            aria-selected={selectedGame === tabItem.id}
+            className={`leaderboard-tab${selectedGame === tabItem.id ? ' is-selected' : ''}`}
+            onClick={() => setSelectedGame(tabItem.id)}
+          >
+            <span aria-hidden="true">{tabItem.emoji}</span> {tabItem.label}
+          </button>
+        ))}
       </div>
 
       <div className="leaderboard-panel" role="tabpanel">

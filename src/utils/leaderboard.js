@@ -5,7 +5,7 @@ import { execute, field } from 'firebase/firestore/pipelines';
 import { SKINS } from '../games/skins.js';
 import { ensureAnonymousUser, getBomBomFirestore } from './firebase.js';
 
-const VALID_GAME_TYPES = new Set(['dodge', 'stack']);
+const VALID_GAME_TYPES = new Set(['dodge', 'stack', 'merge']);
 const VALID_SKIN_IDENTIFIERS = new Set(SKINS.map((skinItem) => skinItem.id));
 const MAX_LEADERBOARD_SCORE = 1000000;
 const LEADERBOARD_LIMIT = 15;

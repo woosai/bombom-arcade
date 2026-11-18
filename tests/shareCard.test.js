@@ -156,12 +156,13 @@ describe('shareOrDownloadCard delivery channels', () => {
 
   it('builds invite text containing clickable play URL and passes url when supported', async () => {
     const inviteText = buildShareInviteText({
-      summary: { gameType: 'dodge', myName: '봄봄', myScore: 420 },
+      summary: { gameType: 'merge', myName: '봄봄', myScore: 420 },
       text: translations.ko,
       activeLang: 'ko'
     });
     expect(inviteText).toContain(PLAY_URL);
     expect(inviteText).toContain('420');
+    expect(inviteText).toContain(translations.ko.mergeTitle);
 
     const shareMock = vi.fn().mockResolvedValue(undefined);
     const navigatorStub = {

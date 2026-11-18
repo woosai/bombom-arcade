@@ -17,9 +17,9 @@
 To make your game progress persist between sessions, BomBom Arcade saves the following non-personal game data locally in your browser's storage on your device:
 
 - **Nickname (Optional):** The player nickname (2–10 characters) you choose for the leaderboard.
-- **High Scores:** Your best scores for Star Dodge Runner and Sky Tower Stacker.
+- **High Scores:** Your best scores for Star Dodge Runner, Sky Tower Stacker, and Starlight Merge.
 - **Collected Stars:** The star currency you earn by playing mini-games.
-- **Unlocked & Equipped Skins:** Which of the 6 BomBom character skins you have unlocked and currently equipped.
+- **Unlocked & Equipped Skins:** Which of the 10 BomBom character skins you have unlocked and currently equipped.
 - **Display & Audio Preferences:** Your selected language (Korean / English / Auto) and sound mute setting.
 
 ### Permissions
@@ -61,9 +61,9 @@ If you have any questions about this Privacy Policy, please contact:
 게임을 다시 열었을 때 진행 상황을 이어서 즐길 수 있도록, 봄봄 아케이드는 아래의 게임 데이터를 사용자의 브라우저 로컬 저장소에 보관합니다.
 
 - **별명 (선택):** 순위표 표시용으로 사용자가 직접 입력한 별명(2~10자)
-- **최고 기록:** 별빛 닷지 러너 및 하늘 타워 쌓기의 최고 점수
+- **최고 기록:** 별빛 닷지 러너, 하늘 타워 쌓기, 별빛 톡톡 합체의 최고 점수
 - **보유 별:** 미니 게임을 플레이하며 획득한 별 개수
-- **스킨 해금 및 장착 상태:** 해금한 봄봄 스킨(6종) 목록과 현재 장착 중인 스킨
+- **스킨 해금 및 장착 상태:** 해금한 봄봄 스킨(10종) 목록과 현재 장착 중인 스킨
 - **환경 설정:** 선택한 언어(한국어 / 영어 / 자동) 및 사운드 음소거 여부
 
 ### 권한 사용 안내
